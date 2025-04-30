@@ -1,30 +1,28 @@
 import { useState } from 'react';
-import { auth } from '../services/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      setError('');
-      alert('Sesión iniciada');
-    } catch (err) {
-      setError('Error al iniciar sesión: ' + err.message);
+      await login(email, password);
+      navigate('/perfil'); // redirige al perfil si inicia sesión con éxito
+    } catch (error) {
+      alert('Error al iniciar sesión: ' + error.message);
     }
   };
 
   return (
-    <form onSubmit={handleLogin} className="max-w-md mx-auto p-4">
-      <h2 className="text-xl font-bold mb-4">Iniciar Sesión</h2>
-      <input className="border p-2 w-full mb-2" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input className="border p-2 w-full mb-2" type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} />
-      <button className="bg-blue-500 text-white px-4 py-2" type="submit">Entrar</button>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+    <form onSubmit={handleSubmit}>
+      <input type="email" placeholder="Correo" onChange={(e) => setEmail(e.target.value)} />
+      <input type="password" placeholder="Contraseña" onChange={(e) => setPassword(e.target.value)} />
+      <button type="submit">Iniciar Sesión</button>
     </form>
   );
 }
