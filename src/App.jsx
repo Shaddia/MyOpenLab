@@ -5,6 +5,7 @@ import './App.css';
 // Páginas que ya tienes
  import Login from './pages/Login';
  import MiPerfil from './pages/Miperfil';
+ import Home from './pages/Home';
  import Explorar from './pages/Explorar';
 
 // Importar el PrivateRoute que protegerá las rutas privadas
@@ -22,7 +23,19 @@ function App() {
       {/* Configuración de las rutas */}
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/perfil" element={<MiPerfil />} />
         <Route path="/explorar" element={<Explorar />} />
+
+        {/* Ruta privada, solo accesible si el usuario está logueado */}
+        <Route
+          path="/home"
+          element={
+            <PrivateRoute>
+              <Home/>
+            </PrivateRoute>
+          }
+        />
 
         {/* Ruta privada, solo accesible si el usuario está logueado */}
         <Route

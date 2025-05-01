@@ -1,5 +1,5 @@
 /* login.css */
-
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
 /* Normaliza el tamaño de caja para evitar scrolls y desbordes */
 * {
     box-sizing: border-box;
@@ -37,7 +37,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden; /* Evita que el contenido se desborde */
-
+    z-index: 0; /* Envía la imagen al fondo */
   }
   
   /* Lado derecho (formulario) */

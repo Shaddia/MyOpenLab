@@ -16,7 +16,7 @@ export default function Login() {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate('/perfil'); // Redirige al perfil si inicia sesión con éxito
+      navigate('/home'); // Redirige al perfil si inicia sesión con éxito
     } catch (error) {
       alert('Error al iniciar sesión: ' + error.message);
     }
