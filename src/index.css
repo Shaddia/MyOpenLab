@@ -24,10 +24,16 @@ a:hover {
 
 body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  flex-direction: column; /* Asegura que los hijos se apilen verticalmente */
+  justify-content: center; /* Centra el contenido verticalmente si es necesario */
+  align-items: center; /* Centra el contenido horizontalmente si es necesario */
+  min-width: 320px; /* Mantén el ancho mínimo */
+  min-height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
+  overflow: hidden; /* Evita scrolls innecesarios */
 }
 
 h1 {
