@@ -4,7 +4,6 @@ import './App.css';
 
 // Páginas que ya tienes
  import Login from './pages/Login';
- import Register from './pages/Register';
  import MiPerfil from './pages/Miperfil';
  import Explorar from './pages/Explorar';
 
@@ -23,7 +22,6 @@ function App() {
       {/* Configuración de las rutas */}
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/explorar" element={<Explorar />} />
 
         {/* Ruta privada, solo accesible si el usuario está logueado */}
