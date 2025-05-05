@@ -1,5 +1,5 @@
 /* login.css */
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
+
 /* Normaliza el tamaño de caja para evitar scrolls y desbordes */
 * {
     box-sizing: border-box;
@@ -73,7 +73,21 @@
     font-size: 1rem;
   }
   
-  /* Campos de entrada */
+  /* Etiquetas para los campos */
+  .login-container label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Espaciado entre grupos de campos */
+  .login-container .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Campos de entrada con bordes redondeados */
   .login-container input {
     width: 100%;
     padding: 14px;
@@ -82,11 +96,16 @@
     border: none;
     border-bottom: 2px solid #ccc;
     outline: none;
-    transition: border-color 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 4px; /* Bordes redondeados */
+    background-color: #f9f9f9; /* Fondo claro */
   }
   
+  /* Efecto al enfocar */
   .login-container input:focus {
     border-bottom: 2px solid #8a2be2;
+    box-shadow: 0 0 5px rgba(138, 43, 226, 0.5); /* Sombra morada */
+    background-color: #ffffff; /* Fondo blanco al enfocar */
   }
   
   /* Botón de iniciar sesión */
