@@ -1,6 +1,6 @@
 // Login.jsx
 import { useState } from 'react'; 
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
 import { db } from '../services/firebase';
@@ -80,6 +80,14 @@ export default function Login() {
       }
 
       // Guardar datos del usuario en Firestore
+      console.log('Datos a rnviar a Firestore:', {
+        email: user.email,
+        uid: user.uid,
+        photoURL: photoURL,
+        name: name,
+        phone: phone,
+        emailVerified: user.emailVerified,
+      });
       if (user && user.uid) {
         try {
           console.log('Guardando datos en Firestore para UID:', user.uid);
@@ -101,7 +109,7 @@ export default function Login() {
           photoURL: photoURL,
           name: name,
           phone: phone,
-          emailVerified: user.emailVerified, 
+          emailVerified: user.emailVerified,
         });
 
         navigate('/perfil');
