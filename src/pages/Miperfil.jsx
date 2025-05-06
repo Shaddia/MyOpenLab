@@ -226,21 +226,6 @@ const MiPerfil = () => {
               </button>
             </>
           )}
-
-          <button
-            onClick={logout}
-            style={{
-              marginTop: '2rem',
-              padding: '0.8rem 1.5rem',
-              backgroundColor: '#ff5e57',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-            }}
-          >
-            Cerrar sesión
-          </button>
         </div>
       </div>
     </Layout>

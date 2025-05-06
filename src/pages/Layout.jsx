@@ -29,8 +29,8 @@ const Layout = ({ children }) => {
           <hr className="divider" />
 
           <div className="account-section">
-            <a href="#"><FontAwesomeIcon icon={faHeart} /> Me gusta</a>
-            <a href="#"><FontAwesomeIcon icon={faStar} /> Favoritos</a>
+            <a href="/megusta"><FontAwesomeIcon icon={faHeart} /> Me gusta</a>
+            <a href="/favoritos"><FontAwesomeIcon icon={faStar} /> Favoritos</a>
 
             <hr className="divider" />
 

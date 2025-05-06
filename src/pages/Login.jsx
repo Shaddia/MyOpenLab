@@ -8,6 +8,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../services/firebase';
 import { getAuth, onAuthStateChanged, sendEmailVerification, reload } from 'firebase/auth';
+import defaultAvatar from '../assets/default-avatar.png';
 
 export default function Login() {
   const { login, register } = useAuth();
@@ -43,78 +44,44 @@ export default function Login() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      // Registrar al usuario con Firebase Authentication
       const userCredential = await register(email, password);
       const { user } = userCredential;
-
-      console.log('Usuario registrado:', user);
-      console.log('UID del usuario registrado:', user.uid);
-
-      // Enviar correo de verificación
+  
       await sendEmailVerification(user);
       alert('Se ha enviado un correo de verificación. Por favor revisa tu bandeja de entrada y haz clic en el enlace.');
-
-      // Esperar a que el usuario confirme que ha verificado su correo
       alert('Después de verificar tu correo, haz clic en "Aceptar" para continuar.');
-
-      // Recargar el usuario para obtener el estado actualizado
+  
       await reload(user);
-      console.log('Estado de emailVerified después de recargar:', user.emailVerified);
-
-      // Verificar si el correo ha sido confirmado
+  
       if (!user.emailVerified) {
         alert('Tu correo aún no ha sido verificado. Por favor verifica tu correo antes de continuar.');
         return;
       }
-
-      // Subir foto de perfil (opcional)
+  
       const fileInput = document.getElementById('profile-photo');
       const file = fileInput?.files[0];
       let photoURL = '';
-
+  
       if (file) {
         const storageRef = ref(storage, `profilePictures/${user.uid}`);
         await uploadBytes(storageRef, file);
         photoURL = await getDownloadURL(storageRef);
-        console.log('Foto subida, URL:', photoURL);
+      } else {
+        // Asignar avatar por defecto
+        photoURL = defaultAvatar;
       }
-
-      // Guardar datos del usuario en Firestore
-      console.log('Datos a rnviar a Firestore:', {
-        email: user.email,
-        uid: user.uid,
-        photoURL: photoURL,
-        name: name,
-        phone: phone,
-        emailVerified: user.emailVerified,
-      });
+  
       if (user && user.uid) {
-        try {
-          console.log('Guardando datos en Firestore para UID:', user.uid);
-          await setDoc(doc(db, 'users', user.uid), {
-            email: user.email,
-            name: name, // Guardar el nombre ingresado
-            phone: phone, // Guardar el teléfono ingresado
-            photoURL: photoURL,
-            emailVerified: user.emailVerified,
-          });
-          console.log('Datos enviados a Firestore correctamente.');
-        } catch (error) {
-          console.error('Error al guardar en Firestore:', error);
-        }
-
-        console.log('Datos enviados a Firestore:', {
+        await setDoc(doc(db, 'users', user.uid), {
           email: user.email,
-          uid: user.uid,
-          photoURL: photoURL,
           name: name,
           phone: phone,
+          photoURL: photoURL,
           emailVerified: user.emailVerified,
         });
-
+  
         navigate('/perfil');
       } else {
-        console.error('El usuario no está autenticado o no tiene UID.');
         alert('Error: El usuario no está autenticado o no tiene UID.');
       }
     } catch (error) {
@@ -125,7 +92,7 @@ export default function Login() {
         alert('Error al registrarse: ' + error.message);
       }
     }
-  };
+  };  
 
   return (
     <div className="login-page">
