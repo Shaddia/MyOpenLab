@@ -228,7 +228,7 @@ const MiPerfil = () => {
         <h2 className="section-title">Mi perfil</h2>
       </div>
 
-      <div style={{ display: 'flex', padding: '2rem', gap: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'row-reverse', padding: '2rem', gap: '2rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem' }}>
           <div
             style={{
@@ -369,13 +369,22 @@ const MiPerfil = () => {
             maxWidth: '950px',
           }}
         >
-  
+
 
           {/* Mostrar Proyectos */}
           <div style={{ marginTop: '2rem' }}>
-            <h3 className="section-title">Mis proyectos</h3>
+            <div style={{
+              backgroundColor: '#8a2be2',
+              color: '#fff',
+              padding: '0.4rem 0.4rem',
+              borderRadius: '5px',
+              marginBottom: '1rem',
+              textAlign: 'center'
+            }}>
+              <h3 style={{ margin: 0, fontSize: '0.7rem' }}>Mis proyectos</h3>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-             {posts.length > 0 ? (
+              {posts.length > 0 ? (
                 posts.map((post) => (
                   <div
                     key={post.id}
@@ -492,7 +501,16 @@ const MiPerfil = () => {
 
           {/* Mostrar Eventos */}
           <div style={{ marginTop: '2rem' }}>
-            <h3 className="section-title">Mis Eventos</h3>
+            <div style={{
+              backgroundColor: '#8a2be2',
+              color: '#fff',
+              padding: '0.4rem 0.4rem',
+              borderRadius: '5px',
+              marginBottom: '1rem',
+              textAlign: 'center'
+            }}>
+              <h3 style={{ margin: 0, fontSize: '0.7rem' }}>Mis Eventos</h3>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
               {eventos.length > 0 ? (
                 eventos.map((evento) => (
