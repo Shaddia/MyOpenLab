@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/home.css';
+import defaultAvatar from '../assets/default-avatar.png'; // Ajusta la ruta si es distinta
+
 import { useAuth } from '../context/useAuth';
 import { db } from '../services/firebase';
 import {
@@ -14,7 +16,8 @@ import {
     updateDoc,
     getDoc
 } from 'firebase/firestore';
-import Layout from './layout';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import Layout from '../components/Layout';
 import { FaHeart, FaRegHeart, FaStar, FaRegStar } from 'react-icons/fa';
 
 const Home = () => {
@@ -22,6 +25,10 @@ const Home = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [projects, setProjects] = useState([]);
     const [usersData, setUsersData] = useState({});
+    const [editingProjectId, setEditingProjectId] = useState(null);
+    const [tipoPublicacion, setTipoPublicacion] = useState('');
+    const [archivo, setArchivo] = useState(null);
+
     const [formData, setFormData] = useState({
         nombre: '',
         descripcion: '',
@@ -29,17 +36,21 @@ const Home = () => {
         herramientas: '',
         fechaInicio: '',
         fechaFin: '',
+        ciudad: '',
+        pais: '',
+        direccion: '',
+        proposito: ''
     });
-    const [editingProjectId, setEditingProjectId] = useState(null);
 
     useEffect(() => {
-        const q = query(collection(db, 'proyectos'), orderBy('fechaCreacion', 'desc'));
-        const unsubscribe = onSnapshot(q, async (snapshot) => {
-            const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setProjects(datos);
+        const qProyectos = query(collection(db, 'proyectos'), orderBy('fechaCreacion', 'desc'));
+
+        const unsubscribeProyectos = onSnapshot(qProyectos, async (snapshotProyectos) => {
+            const proyectos = snapshotProyectos.docs.map((doc) => ({ id: doc.id, tipo: 'proyecto', ...doc.data() }));
+            setProjects(proyectos);
 
             const newUsersData = { ...usersData };
-            for (const project of datos) {
+            for (const project of proyectos) {
                 if (!newUsersData[project.autorId]) {
                     const userDoc = await getDoc(doc(db, 'users', project.autorId));
                     if (userDoc.exists()) {
@@ -50,8 +61,12 @@ const Home = () => {
             setUsersData(newUsersData);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribeProyectos();
+        };
     }, []);
+
+
 
     const handleOpenPopup = () => {
         setShowPopup(true);
@@ -65,9 +80,15 @@ const Home = () => {
             herramientas: '',
             fechaInicio: '',
             fechaFin: '',
+            ciudad: '',
+            pais: '',
+            direccion: '',
+            proposito: ''
         });
+        setArchivo(null);
         setShowPopup(false);
         setEditingProjectId(null);
+        setTipoPublicacion('');
     };
 
     const handleInputChange = (e) => {
@@ -75,16 +96,66 @@ const Home = () => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async () => {
-        const { nombre, descripcion, caracteristicas, herramientas, fechaInicio, fechaFin } = formData;
+    const handleArchivoChange = (e) => {
+        if (e.target.files[0]) {
+            setArchivo(e.target.files[0]);
+        }
+    };
 
-        if (!nombre || !descripcion || !caracteristicas || !herramientas || !fechaInicio || !fechaFin) {
-            alert('Por favor completa todos los campos.');
+    const handleSubmit = async () => {
+        const {
+            nombre,
+            descripcion,
+            caracteristicas,
+            herramientas,
+            fechaInicio,
+            fechaFin,
+            ciudad,
+            pais,
+            direccion,
+            fechaEvento,
+            horaEvento,
+            proposito
+        } = formData;
+
+        if (!tipoPublicacion) {
+            alert('Selecciona si es un proyecto o un evento.');
             return;
+        }
+
+        if (tipoPublicacion === 'proyecto') {
+            if (!nombre || !descripcion || !caracteristicas || !herramientas || !fechaInicio || !fechaFin) {
+                alert('Por favor completa todos los campos del proyecto.');
+                return;
+            }
+        }
+
+        if (tipoPublicacion === 'evento') {
+            if (!nombre || !descripcion || !ciudad || !pais || !direccion || !fechaEvento || !horaEvento) {
+                alert('Por favor completa todos los campos obligatorios del evento.');
+                return;
+            }
+        }
+
+        let archivoUrl = null;
+
+        if (archivo) {
+            const storage = getStorage(); // ¡Esto es importante!
+            const archivoRef = ref(storage, `archivos/${Date.now()}_${archivo.name}`);
+            try {
+                await uploadBytes(archivoRef, archivo);
+                archivoUrl = await getDownloadURL(archivoRef);
+                console.log("Archivo subido correctamente:", archivoUrl);
+            } catch (err) {
+                console.error('Error al subir el archivo:', err);
+                alert('Error al subir el archivo. Intenta nuevamente.');
+                return;
+            }
         }
 
         const data = {
             ...formData,
+            archivoUrl: archivoUrl || null,
             autorId: user.uid,
             autorNombre: user.displayName,
             fechaCreacion: serverTimestamp(),
@@ -93,25 +164,40 @@ const Home = () => {
         };
 
         try {
-            if (editingProjectId) {
-                await updateDoc(doc(db, 'proyectos', editingProjectId), data);
-            } else {
-                await addDoc(collection(db, 'proyectos'), data);
+            if (tipoPublicacion === 'proyecto') {
+                if (editingProjectId) {
+                    await updateDoc(doc(db, 'proyectos', editingProjectId), data);
+                    console.log("Proyecto actualizado");
+                } else {
+                    await addDoc(collection(db, 'proyectos'), data);
+                    console.log("Proyecto creado");
+                }
+            } else if (tipoPublicacion === 'evento') {
+                await addDoc(collection(db, 'eventos'), data);
+                console.log("Evento creado");
             }
+
             handleClosePopup();
         } catch (err) {
-            console.error('Error al guardar el proyecto:', err);
+            console.error('Error al guardar la publicación:', err);
+            alert('Error al guardar. Intenta nuevamente.');
         }
     };
 
+
     const handleEdit = (project) => {
+        setTipoPublicacion(project.tipo || 'proyecto');
         setFormData({
-            nombre: project.nombre,
-            descripcion: project.descripcion,
-            caracteristicas: project.caracteristicas,
-            herramientas: project.herramientas,
-            fechaInicio: project.fechaInicio,
-            fechaFin: project.fechaFin,
+            nombre: project.nombre || '',
+            descripcion: project.descripcion || '',
+            caracteristicas: project.caracteristicas || '',
+            herramientas: project.herramientas || '',
+            fechaInicio: project.fechaInicio || '',
+            fechaFin: project.fechaFin || '',
+            ciudad: project.ciudad || '',
+            pais: project.pais || '',
+            direccion: project.direccion || '',
+            proposito: project.proposito || ''
         });
         setEditingProjectId(project.id);
         setShowPopup(true);
@@ -164,88 +250,229 @@ const Home = () => {
                 <div className="underline" />
             </div>
 
-            <div className="post-creator" onClick={handleOpenPopup}>
-                <textarea placeholder="Haz clic aquí para crear un nuevo proyecto..." readOnly />
+            <div
+                className="crear-publicacion-box"
+                onClick={handleOpenPopup}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: '#fff',
+                    border: '1px solid #b0b0b0',
+                    borderRadius: '999px',
+                    padding: '10px 16px',
+                    cursor: 'pointer',
+                    marginBottom: '1rem',
+                    marginTop: '12px', // BAJAR UN POQUITO
+                    maxWidth: '600px',
+                    marginInline: 'auto'
+                }}
+            >
+                <div style={{ width: '40px', height: '40px', marginRight: '12px' }}>
+                    <img
+                        src={
+                            user?.photoURL ||
+                            usersData[user?.uid]?.photoURL || // fallback desde Firestore
+                            defaultAvatar
+                        }
+                        alt="Avatar"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                        }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
+                    />
+
+
+                </div>
+
+                <span style={{ color: '#666' }}>Crear publicación</span>
             </div>
+
+
+
 
             {showPopup && (
                 <div className="popup">
                     <div className="popup-inner">
-                        <h3>{editingProjectId ? 'Editar Proyecto' : 'Nuevo Proyecto'}</h3>
-                        <input name="nombre" placeholder="Nombre del proyecto" value={formData.nombre} onChange={handleInputChange} required />
-                        <textarea name="descripcion" placeholder="Descripción" value={formData.descripcion} onChange={handleInputChange} required />
-                        <textarea name="caracteristicas" placeholder="Características" value={formData.caracteristicas} onChange={handleInputChange} required />
-                        <input name="herramientas" placeholder="Herramientas de desarrollo" value={formData.herramientas} onChange={handleInputChange} required />
-                        <label>Fecha de inicio:</label>
-                        <input type="date" name="fechaInicio" value={formData.fechaInicio} onChange={handleInputChange} required />
-                        <label>Fecha de finalización:</label>
-                        <input type="date" name="fechaFin" value={formData.fechaFin} onChange={handleInputChange} required />
-                        <div style={{ marginTop: '1rem' }}>
-                            <button onClick={handleSubmit}>{editingProjectId ? 'Guardar Cambios' : 'Publicar'}</button>
-                            <button onClick={handleClosePopup} style={{ marginLeft: '1rem', backgroundColor: '#ccc' }}>Cancelar</button>
+                        <h3>{editingProjectId ? 'Editar Publicación' : 'Nueva Publicación'}</h3>
+
+                        <div
+                            className="popup-content-scrollable"
+                            style={{
+                                maxHeight: '60vh',
+                                overflowY: 'auto',
+                                paddingRight: '10px',
+                                marginBottom: '1rem'
+                            }}
+                        >
+                            <label>Selecciona el tipo de publicación:</label>
+                            <select
+                                value={tipoPublicacion}
+                                onChange={(e) => {
+                                    setTipoPublicacion(e.target.value);
+                                    setFormData({}); // Limpiar campos al cambiar
+                                }}
+                            >
+                                <option value="">Seleccionar opción</option>
+                                <option value="evento">Evento</option>
+                                <option value="proyecto">Proyecto</option>
+                            </select>
+
+
+                            {tipoPublicacion === 'proyecto' && (
+                                <>
+                                    <input name="nombre" placeholder="Nombre del proyecto" value={formData.nombre} onChange={handleInputChange} required />
+                                    <textarea name="descripcion" placeholder="Descripción" value={formData.descripcion} onChange={handleInputChange} required />
+                                    <textarea name="caracteristicas" placeholder="Características" value={formData.caracteristicas} onChange={handleInputChange} required />
+                                    <input name="herramientas" placeholder="Herramientas de desarrollo" value={formData.herramientas} onChange={handleInputChange} required />
+                                    <label>Fecha de inicio:</label>
+                                    <input type="date" name="fechaInicio" value={formData.fechaInicio} onChange={handleInputChange} required />
+                                    <label>Fecha de finalización:</label>
+                                    <input type="date" name="fechaFin" value={formData.fechaFin} onChange={handleInputChange} required />
+
+                                    <label>Archivo multimedia (opcional):</label>
+                                    <input type="file" accept="image/*,video/*" onChange={handleArchivoChange} />
+                                </>
+                            )}
+
+                            {tipoPublicacion === 'evento' && (
+                                <>
+                                    <input name="nombre" placeholder="Nombre del evento" value={formData.nombre} onChange={handleInputChange} required />
+                                    <input name="ciudad" placeholder="Ciudad" value={formData.ciudad} onChange={handleInputChange} required />
+                                    <input name="pais" placeholder="País" value={formData.pais} onChange={handleInputChange} required />
+                                    <input name="direccion" placeholder="Dirección del evento" value={formData.direccion} onChange={handleInputChange} required />
+                                    <textarea name="descripcion" placeholder="Descripción" value={formData.descripcion} onChange={handleInputChange} required />
+                                    <textarea name="proposito" placeholder="Propósito del evento (opcional)" value={formData.proposito} onChange={handleInputChange} />
+                                    <label>Fecha del evento:</label>
+                                    <input type="date" name="fechaEvento" value={formData.fechaEvento} onChange={handleInputChange} required />
+                                    <label>Hora del evento:</label>
+                                    <input type="time" name="horaEvento" value={formData.horaEvento} onChange={handleInputChange} required />
+
+                                    <label>Archivo multimedia (opcional):</label>
+                                    <input type="file" accept="image/*,video/*" onChange={handleArchivoChange} />
+                                </>
+                            )}
+                        </div>
+
+                        <div className="popup-actions">
+                            <button onClick={handleSubmit} disabled={!tipoPublicacion}>
+                                {editingProjectId ? 'Guardar Cambios' : 'Publicar'}
+                            </button>
+                            <button onClick={handleClosePopup} style={{ marginLeft: '1rem', backgroundColor: '#ccc' }}>
+                                Cancelar
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
+
+
 
             <div className="posts">
                 <h3>Publicaciones</h3>
                 {projects.length === 0 && <p>No hay proyectos aún.</p>}
                 {projects.map((project) => {
                     const userInfo = usersData[project.autorId] || {};
-                    const userPhoto = userInfo.photoURL || '/default-avatar.png';
+                    const userPhoto = userInfo.photoURL || defaultAvatar;
                     const userName = userInfo.name || project.autorNombre || 'Usuario';
 
                     const liked = project.likes?.includes(user.uid);
                     const favorited = project.favorites?.includes(user.uid);
 
                     return (
-                        <div key={project.id} className="post-card">
-                            <div className="post-header">
-                                <div className="author-photo" style={{ width: '60px', height: '60px' }}>
-                                    <img src={userPhoto} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                        <div
+                            key={project.id}
+                            className="post-card bg-white shadow-md rounded-2xl p-5 mb-6"
+                            style={{ maxWidth: '568px', marginInline: 'auto' }}
+                        >
+                            <div className="post-header flex items-center mb-4">
+                                <div className="author-photo mr-4" style={{ width: '60px', height: '60px' }}>
+                                    <img
+                                        src={userPhoto}
+                                        alt="Avatar"
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            borderRadius: '50%',
+                                            border: '2px solid #ddd',
+                                        }}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
+                                    />
                                 </div>
                                 <div className="author-details">
-                                    <h4>{userName}</h4>
-                                    <p className="post-date">{formatDate(project.fechaCreacion)}</p>
+                                    <h4 className="font-bold text-lg text-gray-800">{userName}</h4>
+                                    <p className="post-date text-sm text-gray-500">{formatDate(project.fechaCreacion)}</p>
                                 </div>
                             </div>
 
-                            <div className="post-content">
-                                <p><strong>Proyecto:</strong> <strong>{project.nombre}</strong></p>
-                                <p><strong>Descripción:</strong>  {project.descripcion}</p>
-                                <p><strong>Características:</strong> {project.caracteristicas}</p>
-                                <p><strong>Herramientas:</strong> {project.herramientas}</p>
-                                <p><strong>Desde:</strong> {project.fechaInicio} <strong>Hasta:</strong> {getFechaFin(project.fechaFin)}</p>
+                            <div className="post-content text-gray-700 space-y-2">
+                                <p>
+                                    <strong className="text-gray-900">{project.tipo === 'evento' ? 'Evento' : 'Proyecto'}:</strong> {project.nombre}
+                                </p>
+                                {project.descripcion && (
+                                    <p><strong>Descripción:</strong> {project.descripcion}</p>
+                                )}
+                                {project.caracteristicas && (
+                                    <p><strong>Características:</strong> {project.caracteristicas}</p>
+                                )}
+                                {project.herramientas && (
+                                    <p><strong>Herramientas:</strong> {project.herramientas}</p>
+                                )}
+                                {project.archivoUrl && (
+                                    <div className="mt-2">
+                                        {project.archivoUrl.includes('video') ? (
+                                            <video controls style={{ maxWidth: '100%', borderRadius: '12px' }}>
+                                                <source src={project.archivoUrl} />
+                                                Tu navegador no soporta la etiqueta de video.
+                                            </video>
+                                        ) : (
+                                            <img src={project.archivoUrl} alt="Archivo" style={{ maxWidth: '100%', borderRadius: '12px' }} />
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
-                            {project.autorId === user.uid && (
-                                <div className="post-actions">
-                                    <button onClick={() => handleEdit(project)}>Editar</button>
-                                    <button onClick={() => handleDelete(project.id)} className="btn-delete">Eliminar</button>
-                                </div>
-                            )}
+                            <div className="post-action-bar flex justify-between items-center">
+    {/* Botones de Editar y Eliminar alineados a la izquierda */}
+    {project.autorId === user.uid && (
+        <div className="edit-delete-buttons flex gap-2">
+            <button onClick={() => handleEdit(project)} className="text-blue-600">
+                Editar
+            </button>
+            <button onClick={() => handleDelete(project.id)} className="text-red-600">
+                Eliminar
+            </button>
+        </div>
+    )}
 
-                            <div className="post-action-bar">
-                                <button
-                                    className={`btn-like ${liked ? 'active' : ''}`}
-                                    onClick={() => toggleReaction(project.id, 'like')}
-                                >
-                                    {liked ? <FaHeart /> : <FaRegHeart />}
-                                    <span>{project.likes?.length || 0}</span>
-                                </button>
-                                <button
-                                    className={`btn-fav ${favorited ? 'active' : ''}`}
-                                    onClick={() => toggleReaction(project.id, 'favorite')}
-                                >
-                                    {favorited ? <FaStar /> : <FaRegStar />}
-                                    <span>{project.favorites?.length || 0}</span>
-                                </button>
-                            </div>
+    {/* Botones de Me Gusta y Favorito alineados a la derecha */}
+    <div className="like-fav-buttons flex gap-4 items-center">
+        <button
+            className={`btn-like ${liked ? 'active' : ''}`}
+            onClick={() => toggleReaction(project.id, 'like')}
+        >
+            {liked ? <FaHeart /> : <FaRegHeart />}
+            <span>{project.likes?.length || 0}</span>
+        </button>
+        <button
+            className={`btn-fav ${favorited ? 'active' : ''}`}
+            onClick={() => toggleReaction(project.id, 'favorite')}
+        >
+            {favorited ? <FaStar /> : <FaRegStar />}
+            <span>{project.favorites?.length || 0}</span>
+        </button>
+    </div>
+</div>
+
 
                         </div>
                     );
                 })}
+
+
             </div>
         </Layout>
     );

@@ -6,7 +6,6 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import MiPerfil from './pages/Miperfil';
 import Home from './pages/Home';
-import Explorar from './pages/Explorar';
 import Favoritos from './pages/Favoritos';
 import MeGusta from './pages/MeGusta';
 // Importar el PrivateRoute que protegerá las rutas privadas
@@ -14,6 +13,7 @@ import PrivateRoute from './components/PrivateRoute';
 
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
+import Eventos from './pages/Eventos';
 
 
 function App() {
@@ -26,8 +26,7 @@ function App() {
         {/* Configuración de las rutas */}
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/explorar" element={<Explorar />} />
-
+          <Route path="/eventos" element={<Eventos />} />
           {/* Ruta privada, solo accesible si el usuario está logueado */}
           <Route
             path="/home"

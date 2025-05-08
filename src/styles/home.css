@@ -331,86 +331,101 @@ body {
   .reaction-btn:hover {
     opacity: 0.8;
   }
-
-  .reaction-btn .fa-heart, .reaction-btn .fa-star {
-    transition: transform 0.2s ease-in-out;
-  }
-
-  .reaction-btn:hover .fa-heart, .reaction-btn:hover .fa-star {
-    transform: scale(1.2);
-}
 /* Nueva barra inferior para botones de reacciones */
 .post-action-bar {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1rem;
-    padding-right: 1rem;
-    border-top: 1px solid #eee;
-    padding-top: 0.5rem;
-  }
+  display: flex;
+  justify-content: flex-end; /* Alineación a la derecha */ /* Ajuste clave: espaciar entre los botones de izquierda y derecha */
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-right: 1rem;
+  border-top: 1px solid #eee;
+  padding-top: 0.5rem;
+}
 
-  /* Contenedor general de acciones al pie del post */
-.post-action-bar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1.2rem;
-    margin-top: 1rem;
-    padding-right: 1rem;
-    border-top: 1px solid #eee;
-    padding-top: 0.5rem;
-  }
-  
-  /* Botón de Me gusta */
-  .btn-like {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #8a2be2;
-    background-color: transparent;
-    border: 1px solid #8a2be2;
-    border-radius: 20px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease-in-out;
-  }
-  
-  .btn-like:hover {
-    background-color: #f1e6ff;
-  }
-  
-  /* Botón de Favorito */
-  .btn-fav {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #ffa500;
-    background-color: transparent;
-    border: 1px solid #ffa500;
-    border-radius: 20px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease-in-out;
-  }
-  
-  .btn-fav:hover {
-    background-color: #fff4e0;
-  }
-  
-  /* Estado activado */
-  .btn-like.active {
-    background-color: #8a2be2;
-    color: white;
-  }
-  
-  .btn-fav.active {
-    background-color: #8a2be2;
-    color: white;
-  }
-  
+/* Botón de Me gusta */
+.btn-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8a2be2;
+  background-color: transparent;
+  border: 1px solid #8a2be2;
+  border-radius: 20px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-like:hover {
+  background-color: #f1e6ff;
+}
+
+/* Botón de Favorito */
+.btn-fav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffa500;
+  background-color: transparent;
+  border: 1px solid #ffa500;
+  border-radius: 20px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-fav:hover {
+  background-color: #fff4e0;
+}
+
+/* Estado activado */
+.btn-like.active {
+  background-color: #8a2be2;
+  color: white;
+}
+
+.btn-fav.active {
+  background-color: #ffa500;
+  color: white;
+}
+
+/* Contenedor de botones editar y eliminar */
+.edit-delete-buttons {
+display: flex;
+gap: 10px;
+margin-right: auto; /* Asegura que estos botones se alineen a la izquierda */
+}
+
+/* Botón de Editar */
+.edit-delete-buttons button {
+color: #8a2be2;
+background-color: transparent;
+border: 1px solid #8a2be2;
+border-radius: 20px;
+padding: 6px 12px;
+cursor: pointer;
+font-size: 14px;
+transition: all 0.2s ease-in-out;
+}
+
+/* Botón de Eliminar */
+.edit-delete-buttons button.text-red-600 {
+color: #ff0000;
+border-color: #ff0000;
+}
+
+.edit-delete-buttons button:hover {
+background-color: #f1e6ff;
+}
+
+/* Eliminar con color morado al pasar el mouse */
+.edit-delete-buttons button:hover.text-red-600 {
+background-color: #ffebeb;
+}
+
 
 .post-header .post-date {
     font-size: 0.9rem;
@@ -419,3 +434,205 @@ body {
     font-weight: normal; /* Puedes añadir esto si deseas que el texto de la fecha sea más liviano */
   }
   
+  /* Add these styles to your home.css file */
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 8px 16px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logout-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.logout-button svg {
+  margin-right: 8px;
+}
+
+.archivo-preview {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.archivo-img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.archivo-video {
+  width: 100%;
+  max-height: 400px;
+  border-radius: 10px;
+}
+
+.archivo-link {
+  color: #007bff;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+/* Estilos de los posts en la sección de Favoritos */
+.favoritos-post-card {
+  background: #fdfdfd;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.06);
+}
+
+/* Post content similar to the 'explore' section */
+.favoritos-post-header {
+  display: flex;
+  align-items: center;
+}
+
+.favoritos-author-photo img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin-right: 0.8rem;
+}
+
+.favoritos-author-details h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #531a89;
+}
+
+.favoritos-author-details .post-date {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* Contenido del post */
+.favoritos-post-content p {
+  margin: 8px 0;
+  color: #444;
+  line-height: 1.5;
+}
+
+/* Acción de Me gusta y Favorito */
+.favoritos-post-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Botones de Reacción */
+.favoritos-reaction-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end; /* Alinea los botones a la derecha */
+}
+
+/* Estilos para botones de Me gusta y Favorito */
+.favoritos-btn-like, .favoritos-btn-fav {
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.favoritos-btn-like {
+  color: #8a2be2;
+  border: 1px solid #8a2be2;
+}
+
+.favoritos-btn-fav {
+  color: #ffa500;
+  border: 1px solid #ffa500;
+}
+
+/* Estado activado para Me gusta y Favorito */
+.favoritos-btn-like.active {
+  background-color: #8a2be2;
+  color: white;
+}
+
+.favoritos-btn-fav.active {
+  background-color: #ffa500;
+  color: white;
+}
+
+.like-fav-buttons .btn-like {
+  margin-right: 8px; /* Añadido margen entre Me gusta y Favorito */
+}
+
+/* Post de "Me gusta" */
+.post-card.liked {
+  background: #f8f8f8; /* Fondo más claro similar al de explorar */
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra más suave */
+  border-left: 5px solid #8a2be2; /* Borde morado a la izquierda para identificar los que tienen "Me gusta" */
+}
+
+/* Contenido del post con "Me gusta" */
+.post-card.liked .post-content p {
+  color: #555; /* Texto más oscuro */
+}
+
+/* Encabezado del post con "Me gusta" */
+.post-card.liked .post-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.post-card.liked .author-photo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.post-card.liked .author-details h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #3e1466; /* Color más oscuro para la parte del autor */
+}
+
+/* Fecha de publicación con "Me gusta" */
+.post-card.liked .author-details .post-date {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* Estilo del botón de "Me gusta" */
+.btn-like {
+  color: #8a2be2;
+  background-color: transparent;
+  border: 1px solid #8a2be2;
+  border-radius: 20px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-like:hover {
+  background-color: #f1e6ff;
+}
+
+/* Estado activado del botón de "Me gusta" */
+.btn-like.active {
+  background-color: #8a2be2;
+  color: white;
+}

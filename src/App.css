@@ -41,3 +41,9 @@
 .read-the-docs {
   color: #888;
 }
+
+button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent;
+}

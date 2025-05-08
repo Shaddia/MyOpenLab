@@ -1,135 +1,194 @@
-// Favoritos.jsx
 import React, { useEffect, useState } from 'react';
-import '../styles/home.css';
+import '../styles/home.css'; // Asegúrate de que ambos archivos CSS sean compatibles
+import defaultAvatar from '../assets/default-avatar.png'; // Ajusta la ruta si es distinta
+
 import { useAuth } from '../context/useAuth';
 import { db } from '../services/firebase';
 import {
-  collection,
-  query,
-  onSnapshot,
-  doc,
-  getDoc,
-  updateDoc
+    collection,
+    query,
+    onSnapshot,
+    getDoc,
+    doc,
+    updateDoc
 } from 'firebase/firestore';
-import Layout from './layout';
-import { FaHeart, FaStar } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
+import Layout from '../components/Layout';
+import { FaHeart, FaRegHeart, FaStar, FaRegStar } from 'react-icons/fa';
 
 const Favoritos = () => {
-  const { user } = useAuth();
-  const [favoriteProjects, setFavoriteProjects] = useState([]);
-  const [usersData, setUsersData] = useState({});
+    const { user } = useAuth();
+    const [projects, setProjects] = useState([]);
+    const [usersData, setUsersData] = useState({});
 
-  useEffect(() => {
-    const q = query(collection(db, 'proyectos'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const favoritos = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(project => project.favorites?.includes(user.uid));
-      setFavoriteProjects(favoritos);
-    });
-
-    return () => unsubscribe();
-  }, [user.uid]);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const data = {};
-      for (const project of favoriteProjects) {
-        if (!data[project.autorId]) {
-          const userSnap = await getDoc(doc(db, 'users', project.autorId));
-          if (userSnap.exists()) {
-            data[project.autorId] = userSnap.data();
+    useEffect(() => {
+      const qProyectos = query(collection(db, 'proyectos'));
+      const qEventos = query(collection(db, 'eventos'));
+  
+      const unsubscribeProyectos = onSnapshot(qProyectos, async (snapshotProyectos) => {
+          const proyectos = snapshotProyectos.docs
+              .map((doc) => ({ id: doc.id, tipo: 'proyecto', ...doc.data() }))
+              .filter((project) => project.favorites?.includes(user.uid));
+  
+          const newUsersData = { ...usersData };
+          for (const project of proyectos) {
+              if (!newUsersData[project.autorId]) {
+                  const userDoc = await getDoc(doc(db, 'users', project.autorId));
+                  if (userDoc.exists()) {
+                      newUsersData[project.autorId] = userDoc.data();
+                  }
+              }
           }
-        }
-      }
-      setUsersData(data);
+          setUsersData(newUsersData);
+          setProjects((prev) => [...prev.filter(p => p.tipo !== 'proyecto'), ...proyectos]);
+      });
+  
+      const unsubscribeEventos = onSnapshot(qEventos, async (snapshotEventos) => {
+          const eventos = snapshotEventos.docs
+              .map((doc) => ({ id: doc.id, tipo: 'evento', ...doc.data() }))
+              .filter((evento) => evento.favorites?.includes(user.uid));
+  
+          const newUsersData = { ...usersData };
+          for (const evento of eventos) {
+              if (!newUsersData[evento.autorId]) {
+                  const userDoc = await getDoc(doc(db, 'users', evento.autorId));
+                  if (userDoc.exists()) {
+                      newUsersData[evento.autorId] = userDoc.data();
+                  }
+              }
+          }
+          setUsersData(newUsersData);
+          setProjects((prev) => [...prev.filter(p => p.tipo !== 'evento'), ...eventos]);
+      });
+  
+      return () => {
+          unsubscribeProyectos();
+          unsubscribeEventos();
+      };
+  }, [user.uid]);
+  
+
+    const formatDate = (timestamp) => {
+        if (!timestamp) return '';
+        const date = timestamp.toDate();
+        return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
     };
 
-    if (favoriteProjects.length > 0) {
-      fetchUsers();
-    }
-  }, [favoriteProjects]);
+    const toggleReaction = async (id, type) => {
+        const projectRef = doc(db, 'proyectos', id);
+        const projectSnap = await getDoc(projectRef);
+        const projectData = projectSnap.data();
 
-  const removeFavorite = async (projectId) => {
-    const projectRef = doc(db, 'proyectos', projectId);
-    const projectSnap = await getDoc(projectRef);
+        const field = type === 'like' ? 'likes' : 'favorites';
+        const arr = projectData[field] || [];
 
-    if (projectSnap.exists()) {
-      const projectData = projectSnap.data();
-      const updatedFavorites = projectData.favorites?.filter(uid => uid !== user.uid) || [];
+        const updatedArr = arr.includes(user.uid)
+            ? arr.filter((uid) => uid !== user.uid)
+            : [...arr, user.uid];
 
-      await updateDoc(projectRef, { favorites: updatedFavorites });
-    }
-  };
+        await updateDoc(projectRef, { [field]: updatedArr });
+    };
 
-  return (
-    <Layout>
-      <div className="top-bar">
-        <h2 className="section-title">Mis Favoritos</h2>
-        <div className="underline" />
-      </div>
+    return (
+        <Layout>
+            <div className="top-bar">
+                <h2 className="section-title">Favoritos</h2>
+                <div className="underline" />
+            </div>
 
-      <div className="posts">
-        {favoriteProjects.length === 0 ? (
-          <p>Aún no tienes proyectos en favoritos.</p>
-        ) : (
-          <AnimatePresence>
-            {favoriteProjects.map(project => {
-              const autor = usersData[project.autorId] || {};
-              const postDate = project.fechaPublicacion?.toDate?.() || new Date();
-              const formattedDate = postDate.toLocaleDateString();
+            <div className="posts">
+                <h3>Publicaciones Favoritas</h3>
+                {projects.length === 0 && <p>No tienes proyectos favoritos aún.</p>}
+                {projects.map((project) => {
+                    const userInfo = usersData[project.autorId] || {};
+                    const userPhoto = userInfo.photoURL || defaultAvatar;
+                    const userName = userInfo.name || project.autorNombre || 'Usuario';
 
-              return (
-                <motion.div
-                  key={project.id}
-                  className="post-card"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="post-header">
-                    <div className="author-photo">
-                      <img src={autor.photoURL || '/default-avatar.png'} alt="Avatar" />
-                    </div>
-                    <div className="author-details">
-                      <h4>{autor.name || project.autorNombre || 'Usuario'}</h4>
-                      <p className="post-date">{formattedDate}</p>
-                    </div>
-                  </div>
+                    const liked = project.likes?.includes(user.uid);
+                    const favorited = project.favorites?.includes(user.uid);
 
-                  <div className="post-content">
-                    <p><strong>Proyecto:</strong> <strong>{project.nombre}</strong></p>
-                    <p>{project.descripcion}</p>
-                    <p><strong>Características:</strong> {project.caracteristicas}</p>
-                    <p><strong>Herramientas:</strong> {project.herramientas}</p>
-                    <p><strong>Desde:</strong> {project.fechaInicio} <strong>Hasta:</strong> {project.fechaFin}</p>
-                  </div>
+                    return (
+                        <div
+                            key={project.id}
+                            className="post-card bg-white shadow-md rounded-2xl p-5 mb-6"
+                            style={{ maxWidth: '568px', marginInline: 'auto' }}
+                        >
+                            <div className="post-header flex items-center mb-4">
+                                <div className="author-photo mr-4" style={{ width: '60px', height: '60px' }}>
+                                    <img
+                                        src={userPhoto}
+                                        alt="Avatar"
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            borderRadius: '50%',
+                                            border: '2px solid #ddd',
+                                        }}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
+                                    />
+                                </div>
+                                <div className="author-details">
+                                    <h4 className="font-bold text-lg text-gray-800">{userName}</h4>
+                                    <p className="post-date text-sm text-gray-500">{formatDate(project.fechaCreacion)}</p>
+                                </div>
+                            </div>
 
-                  <div className="post-action-bar">
-                    <div className="reaction-btn">
-                      <FaHeart color="purple" size={20} />
-                      <span>{project.likes?.length || 0}</span>
-                    </div>
-                    <div
-                      onClick={() => removeFavorite(project.id)}
-                      className="reaction-btn"
-                      style={{ cursor: 'pointer' }}
-                      title="Quitar de favoritos"
-                    >
-                      <FaStar color="gray" size={20} />
-                      <span>{project.favorites?.length || 0}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        )}
-      </div>
-    </Layout>
-  );
+                            <div className="post-content text-gray-700 space-y-2">
+                                <p>
+                                    <strong className="text-gray-900">{project.tipo === 'evento' ? 'Evento' : 'Proyecto'}:</strong> {project.nombre}
+                                </p>
+                                {project.descripcion && (
+                                    <p><strong>Descripción:</strong> {project.descripcion}</p>
+                                )}
+                                {project.caracteristicas && (
+                                    <p><strong>Características:</strong> {project.caracteristicas}</p>
+                                )}
+                                {project.herramientas && (
+                                    <p><strong>Herramientas:</strong> {project.herramientas}</p>
+                                )}
+                                {project.archivoUrl && (
+                                    <div className="mt-2">
+                                        {project.archivoUrl.includes('video') ? (
+                                            <video controls style={{ maxWidth: '100%', borderRadius: '12px' }}>
+                                                <source src={project.archivoUrl} />
+                                                Tu navegador no soporta la etiqueta de video.
+                                            </video>
+                                        ) : (
+                                            <img src={project.archivoUrl} alt="Archivo" style={{ maxWidth: '100%', borderRadius: '12px' }} />
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="post-action-bar flex justify-between items-center">
+                                {/* Botones de Me Gusta y Favorito alineados a la derecha */}
+                                <div className="like-fav-buttons flex gap-4 items-center">
+                                    <button
+                                        className={`btn-like ${liked ? 'active' : ''}`}
+                                        onClick={() => toggleReaction(project.id, 'like')}
+                                    >
+                                        {liked ? <FaHeart /> : <FaRegHeart />}
+                                        <span>{project.likes?.length || 0}</span>
+                                    </button>
+                                    <button
+                                        className={`btn-fav ${favorited ? 'active' : ''}`}
+                                        onClick={() => toggleReaction(project.id, 'favorite')}
+                                    >
+                                        {favorited ? <FaStar /> : <FaRegStar />}
+                                        <span>{project.favorites?.length || 0}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </Layout>
+    );
 };
 
 export default Favoritos;

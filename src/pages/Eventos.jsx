@@ -12,53 +12,41 @@ import {
     doc,
     updateDoc
 } from 'firebase/firestore';
+
 import Layout from '../components/Layout';
 import { FaHeart, FaRegHeart, FaStar, FaRegStar } from 'react-icons/fa';
 
-const MeGusta = () => {
+const Eventos = () => {
     const { user } = useAuth();
-    const [projects, setProjects] = useState([]);
+    const [events, setEvents] = useState([]);
     const [usersData, setUsersData] = useState({});
 
     useEffect(() => {
-      const qProyectos = query(collection(db, 'proyectos'));
-      const qEventos = query(collection(db, 'eventos'));
-  
-      const unsubscribeProyectos = onSnapshot(qProyectos, async (snapshotProyectos) => {
-          const likedProjects = snapshotProyectos.docs
-              .map((doc) => ({ id: doc.id, tipo: 'proyecto', ...doc.data() }))
-              .filter((project) => project.likes?.includes(user.uid));
-  
-          const unsubscribeEventos = onSnapshot(qEventos, async (snapshotEventos) => {
-              const likedEventos = snapshotEventos.docs
-                  .map((doc) => ({ id: doc.id, tipo: 'evento', ...doc.data() }))
-                  .filter((event) => event.likes?.includes(user.uid));
-  
-              const combined = [...likedProjects, ...likedEventos];
-              setProjects(combined);
-  
-              const newUsersData = { ...usersData };
-              for (const item of combined) {
-                  if (!newUsersData[item.autorId]) {
-                      const userDoc = await getDoc(doc(db, 'users', item.autorId));
-                      if (userDoc.exists()) {
-                          newUsersData[item.autorId] = userDoc.data();
-                      }
-                  }
-              }
-              setUsersData(newUsersData);
-          });
-  
-          return () => {
-              unsubscribeEventos();
-          };
-      });
-  
-      return () => {
-          unsubscribeProyectos();
-      };
-  }, [user.uid, usersData]);
-  
+        const qEventos = query(collection(db, 'eventos'));
+
+        const unsubscribeEventos = onSnapshot(qEventos, async (snapshotEventos) => {
+            const eventos = snapshotEventos.docs.map((doc) => ({
+                id: doc.id,
+                tipo: 'evento',
+                ...doc.data()
+            }));
+
+            setEvents(eventos);
+
+            const newUsersData = { ...usersData };
+            for (const event of eventos) {
+                if (!newUsersData[event.autorId]) {
+                    const userDoc = await getDoc(doc(db, 'users', event.autorId));
+                    if (userDoc.exists()) {
+                        newUsersData[event.autorId] = userDoc.data();
+                    }
+                }
+            }
+            setUsersData(newUsersData);
+        });
+
+        return () => unsubscribeEventos();
+    }, [usersData]);
 
     const formatDate = (timestamp) => {
         if (!timestamp) return '';
@@ -70,42 +58,55 @@ const MeGusta = () => {
         });
     };
 
-    const toggleReaction = async (id, type) => {
-        const projectRef = doc(db, 'proyectos', id);
-        const projectSnap = await getDoc(projectRef);
-        const projectData = projectSnap.data();
+ const toggleReaction = async (id, type) => {
+    const eventRef = doc(db, 'eventos', id);
+    const eventSnap = await getDoc(eventRef);
+    const eventData = eventSnap.data();
 
-        const field = type === 'like' ? 'likes' : 'favorites';
-        const arr = projectData[field] || [];
+    const field = type === 'like' ? 'likes' : 'favorites';
+    const arr = eventData[field] || [];
 
-        const updatedArr = arr.includes(user.uid)
-            ? arr.filter((uid) => uid !== user.uid)
-            : [...arr, user.uid];
+    const updatedArr = arr.includes(user.uid)
+        ? arr.filter((uid) => uid !== user.uid)
+        : [...arr, user.uid];
 
-        await updateDoc(projectRef, { [field]: updatedArr });
-    };
+    await updateDoc(eventRef, { [field]: updatedArr });
+
+    // Actualizar el estado local manualmente
+    setEvents((prevEvents) =>
+        prevEvents.map((event) =>
+            event.id === id
+                ? {
+                    ...event,
+                    [field]: updatedArr
+                }
+                : event
+        )
+    );
+};
+
 
     return (
         <Layout>
             <div className="top-bar">
-                <h2 className="section-title">Me Gusta</h2>
+                <h2 className="section-title">Eventos</h2>
                 <div className="underline" />
             </div>
 
             <div className="posts">
-                <h3>Publicaciones que te gustan</h3>
-                {projects.length === 0 && <p>No has dado "Me Gusta" a ningún proyecto aún.</p>}
-                {projects.map((project) => {
-                    const userInfo = usersData[project.autorId] || {};
+                <h3>Todos los eventos</h3>
+                {events.length === 0 && <p>No hay eventos disponibles aún.</p>}
+                {events.map((event) => {
+                    const userInfo = usersData[event.autorId] || {};
                     const userPhoto = userInfo.photoURL || defaultAvatar;
-                    const userName = userInfo.name || project.autorNombre || 'Usuario';
+                    const userName = userInfo.name || event.autorNombre || 'Usuario';
 
-                    const liked = project.likes?.includes(user.uid);
-                    const favorited = project.favorites?.includes(user.uid);
+                    const liked = event.likes?.includes(user.uid);
+                    const favorited = event.favorites?.includes(user.uid);
 
                     return (
                         <div
-                            key={project.id}
+                            key={event.id}
                             className="post-card bg-white shadow-md rounded-2xl p-5 mb-6"
                             style={{ maxWidth: '568px', marginInline: 'auto' }}
                         >
@@ -126,32 +127,32 @@ const MeGusta = () => {
                                 </div>
                                 <div className="author-details">
                                     <h4 className="font-bold text-lg text-gray-800">{userName}</h4>
-                                    <p className="post-date text-sm text-gray-500">{formatDate(project.fechaCreacion)}</p>
+                                    <p className="post-date text-sm text-gray-500">{formatDate(event.fechaCreacion)}</p>
                                 </div>
                             </div>
 
                             <div className="post-content text-gray-700 space-y-2">
                                 <p>
-                                    <strong className="text-gray-900">{project.tipo === 'evento' ? 'Evento' : 'Proyecto'}:</strong> {project.nombre}
+                                    <strong className="text-gray-900">Evento:</strong> {event.nombre}
                                 </p>
-                                {project.descripcion && (
-                                    <p><strong>Descripción:</strong> {project.descripcion}</p>
+                                {event.descripcion && (
+                                    <p><strong>Descripción:</strong> {event.descripcion}</p>
                                 )}
-                                {project.caracteristicas && (
-                                    <p><strong>Características:</strong> {project.caracteristicas}</p>
+                                {event.caracteristicas && (
+                                    <p><strong>Características:</strong> {event.caracteristicas}</p>
                                 )}
-                                {project.herramientas && (
-                                    <p><strong>Herramientas:</strong> {project.herramientas}</p>
+                                {event.herramientas && (
+                                    <p><strong>Herramientas:</strong> {event.herramientas}</p>
                                 )}
-                                {project.archivoUrl && (
+                                {event.archivoUrl && (
                                     <div className="mt-2">
-                                        {project.archivoUrl.includes('video') ? (
+                                        {event.archivoUrl.includes('video') ? (
                                             <video controls style={{ maxWidth: '100%', borderRadius: '12px' }}>
-                                                <source src={project.archivoUrl} />
+                                                <source src={event.archivoUrl} />
                                                 Tu navegador no soporta la etiqueta de video.
                                             </video>
                                         ) : (
-                                            <img src={project.archivoUrl} alt="Archivo" style={{ maxWidth: '100%', borderRadius: '12px' }} />
+                                            <img src={event.archivoUrl} alt="Archivo" style={{ maxWidth: '100%', borderRadius: '12px' }} />
                                         )}
                                     </div>
                                 )}
@@ -161,17 +162,17 @@ const MeGusta = () => {
                                 <div className="like-fav-buttons flex gap-4 items-center">
                                     <button
                                         className={`btn-like ${liked ? 'active' : ''}`}
-                                        onClick={() => toggleReaction(project.id, 'like')}
+                                        onClick={() => toggleReaction(event.id, 'like')}
                                     >
                                         {liked ? <FaHeart /> : <FaRegHeart />}
-                                        <span>{project.likes?.length || 0}</span>
+                                        <span>{event.likes?.length || 0}</span>
                                     </button>
                                     <button
                                         className={`btn-fav ${favorited ? 'active' : ''}`}
-                                        onClick={() => toggleReaction(project.id, 'favorite')}
+                                        onClick={() => toggleReaction(event.id, 'favorite')}
                                     >
                                         {favorited ? <FaStar /> : <FaRegStar />}
-                                        <span>{project.favorites?.length || 0}</span>
+                                        <span>{event.favorites?.length || 0}</span>
                                     </button>
                                 </div>
                             </div>
@@ -183,4 +184,4 @@ const MeGusta = () => {
     );
 };
 
-export default MeGusta;
+export default Eventos;
