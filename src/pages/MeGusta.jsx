@@ -104,7 +104,7 @@ const MeGusta = () => {
 
             <div className="posts">
                 <h3>Publicaciones que te gustan</h3>
-                {projects.length === 0 && <p>No has dado "Me Gusta" a ningún proyecto aún.</p>}
+                {projects.length === 0 && <p>No has dado "Me Gusta" a ningún proyecto o evento aún.</p>}
                 {projects.map((project) => {
                     const userInfo = usersData[project.autorId] || {};
                     const userPhoto = userInfo.photoURL || defaultAvatar;

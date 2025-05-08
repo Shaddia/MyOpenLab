@@ -101,7 +101,7 @@ const Favoritos = () => {
 
             <div className="posts">
                 <h3>Publicaciones Favoritas</h3>
-                {projects.length === 0 && <p>No tienes proyectos favoritos aún.</p>}
+                {projects.length === 0 && <p>No tienes proyectos o eventos favoritos aún.</p>}
                 {projects.map((project) => {
                     const userInfo = usersData[project.autorId] || {};
                     const userPhoto = userInfo.photoURL || defaultAvatar;
