@@ -28,6 +28,8 @@ const Home = () => {
     const [editingProjectId, setEditingProjectId] = useState(null);
     const [tipoPublicacion, setTipoPublicacion] = useState('');
     const [archivo, setArchivo] = useState(null);
+ // Nuevo estado para almacenar la URL original del archivo
+ const [originalArchivoUrl, setOriginalArchivoUrl] = useState(null);
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -86,6 +88,7 @@ const Home = () => {
             proposito: ''
         });
         setArchivo(null);
+        setOriginalArchivoUrl(null); // Limpiar la URL original
         setShowPopup(false);
         setEditingProjectId(null);
         setTipoPublicacion('');
@@ -151,6 +154,9 @@ const Home = () => {
                 alert('Error al subir el archivo. Intenta nuevamente.');
                 return;
             }
+        }else if (editingProjectId) {
+            // Conserva la URL original si no se selecciona un nuevo archivo al editar
+            archivoUrl = originalArchivoUrl;
         }
 
         const data = {
@@ -200,6 +206,8 @@ const Home = () => {
             proposito: project.proposito || ''
         });
         setEditingProjectId(project.id);
+        // Al editar, guarda la URL original (si existe) para conservarla si no se selecciona un nuevo archivo
+        setOriginalArchivoUrl(project.archivoUrl || null);
         setShowPopup(true);
     };
 
