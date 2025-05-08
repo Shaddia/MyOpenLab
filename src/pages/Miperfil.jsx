@@ -369,60 +369,7 @@ const MiPerfil = () => {
             maxWidth: '950px',
           }}
         >
-          <h3 style={{ marginBottom: '2rem', color: '#6a1bbd' }}>Información del Perfil</h3>
-          <p><strong>Nombre:</strong> {userData?.name || 'No especificado'}</p>
-          <p><strong>Email:</strong> {userData?.email || user.email}</p>
-          <p><strong>Teléfono:</strong> {userData?.phone || 'No registrado'}</p>
-
-          {/* Mostrar el botón de editar solo si no estamos editando */}
-          {!isEditing ? (
-            <button
-              onClick={handleEdit}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#8a2be2',
-                color: '#fff',
-                border: 'none',
-                cursor: 'pointer',
-                marginTop: '1rem',
-              }}
-            >
-              Editar
-            </button>
-          ) : (
-            <div style={{ marginTop: '2rem' }}>
-              <h4>Editar Información</h4>
-              <input
-                type="text"
-                name="name"
-                value={editedInfo.name}
-                onChange={handleChange}
-                placeholder="Nombre"
-                style={{ width: '100%', marginBottom: '0.5rem', padding: '0.5rem' }}
-              />
-              <input
-                type="text"
-                name="phone"
-                value={editedInfo.phone}
-                onChange={handleChange}
-                placeholder="Teléfono"
-                style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem' }}
-              />
-              <button
-                onClick={handleSaveChanges}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#8a2be2',
-                  color: '#fff',
-                  border: 'none',
-                  cursor: 'pointer',
-                  marginTop: '1rem',
-                }}
-              >
-                Guardar cambios
-              </button>
-            </div>
-          )}
+  
 
           {/* Mostrar Proyectos */}
           <div style={{ marginTop: '2rem' }}>
