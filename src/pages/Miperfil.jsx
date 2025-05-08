@@ -391,13 +391,14 @@ const MiPerfil = () => {
                       transition: 'transform 0.2s',
                       fontSize: '0.85rem',
                       position: 'relative',
-                      margin: '0 auto'
+                      margin: '0 auto',
+                      backgroundColor: '#b3bac0', //COLOR TARJETA ABAJO
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >
                     <div style={{
-                      backgroundColor: '#8a2be2',
+                      backgroundColor: '#8a2be2', //COLOR TARJETA BARRA
                       color: 'white',
                       padding: '0.5rem 0.75rem',
                       fontWeight: 'bold',
@@ -417,9 +418,9 @@ const MiPerfil = () => {
                         }}
                         style={{
                           position: 'absolute',
-                          top: '0.5rem',
+                          top: '0.1rem', //ALTURA ICONO EDITAR
                           right: '2.5rem',
-                          backgroundColor: 'transparent',
+                          backgroundColor: 'transparent', //COLOR ICONOS  EDITAR
                           border: 'none',
                           color: 'white',
                           cursor: 'pointer'
@@ -434,9 +435,9 @@ const MiPerfil = () => {
                         }}
                         style={{
                           position: 'absolute',
-                          top: '0.5rem',
+                          top: '0.1rem', //ALTURA ICONO BASURA
                           right: '0.5rem',
-                          backgroundColor: 'transparent',
+                          backgroundColor: 'transparent', //COLOR ICONOS BASURA 
                           border: 'none',
                           color: 'white',
                           cursor: 'pointer'
@@ -500,7 +501,7 @@ const MiPerfil = () => {
                     onClick={() => toggleExpandEvento(evento.id)}
                     style={{
                       width: '320px', // Igual que la tarjeta de proyecto
-                      backgroundColor: '#fff',
+                      backgroundColor: '#a18594 ', //COLOR TARJETA ABAJO
                       borderRadius: '10px',
                       clipPath: 'inset(0 round 10px)',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
@@ -535,7 +536,7 @@ const MiPerfil = () => {
                         }}
                         style={{
                           position: 'absolute',
-                          top: '10px',
+                          top: '0.1rem', //ALTURA ICONO EDITAR
                           right: '40px', // Ahora el botón de editar está aquí
                           backgroundColor: 'transparent',
                           border: 'none',
@@ -552,7 +553,7 @@ const MiPerfil = () => {
                         }}
                         style={{
                           position: 'absolute',
-                          top: '10px',
+                          top: '0.1rem', //ALTURA ICONO BASURA
                           right: '10px', // Ahora el botón de eliminar está aquí
                           backgroundColor: 'transparent',
                           border: 'none',
@@ -624,7 +625,7 @@ const MiPerfil = () => {
         >
           <div
             style={{
-              backgroundColor: '#fff',
+              backgroundColor: '#f5f5f5',
               padding: '2rem',
               borderRadius: '10px',
               width: '90%',
