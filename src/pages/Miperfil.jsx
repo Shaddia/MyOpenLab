@@ -624,6 +624,18 @@ const MiPerfil = () => {
                           <p><strong>Ciudad:</strong> {evento.ciudad}</p>
                           <p><strong>Fecha de Evento:</strong> {evento.fechaEvento}</p>
                           <p><strong>Hora de Evento:</strong> {evento.horaEvento}</p>
+                          {evento.archivoUrl && (
+                            <p>
+                              <a
+                                href={evento.archivoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#8a2be2', textDecoration: 'underline' }}
+                              >
+                                Ver archivo
+                              </a>
+                            </p>
+                          )}
                           <div style={{
                             position: 'absolute',
                             bottom: '5px',
