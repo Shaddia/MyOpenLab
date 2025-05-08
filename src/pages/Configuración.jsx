@@ -1,4 +1,6 @@
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../services/firebase';
@@ -63,7 +65,7 @@ const Configuración = () => {
   const handleChangePassword = async () => {
     const currentPassword = window.prompt("Ingresa tu contraseña actual:");
     if (!currentPassword) return;
-
+  
     const newPassword = window.prompt("Ingrese su nueva contraseña (mínimo 6 caracteres):");
     if (!newPassword || newPassword.length < 6) {
       alert("La nueva contraseña debe tener al menos 6 caracteres.");
@@ -83,7 +85,9 @@ const Configuración = () => {
       
       // Enviar correo de verificación
       await sendEmailVerification(user);
-      alert("Se ha enviado un correo de verificación a tu gmail. Revisa tu correo para confirmar el cambio.");
+      
+      // Mensaje de éxito
+      alert("La contraseña se actualizó exitosamente. Se ha enviado un correo de verificación a tu correo.");
     } catch (error) {
       console.error("Error cambiando la contraseña:", error);
       alert("Error cambiando la contraseña: " + error.message);
@@ -92,7 +96,7 @@ const Configuración = () => {
 
   return (
     <Layout>
-      <div style={{ display: 'flex', padding: '2rem', maxWidth: '100%', margin: '0 auto', marginLeft:'0', marginRight: '0' }}>
+      <div style={{ display: 'flex', padding: '2rem', maxWidth: '100%', margin: '0 auto', marginLeft: '0', marginRight: '0' }}>
         {/* Contenido principal */}
         <div style={{ flex: '1 1 70%', paddingRight: '1rem' }}>
           <h2 style={{ marginBottom: '1rem', textAlign: 'center' }}>Configuración de Cuenta</h2>
@@ -106,6 +110,24 @@ const Configuración = () => {
             <p style={{ marginBottom: '1.5rem', color: '#333' }}>
               Aquí puedes administrar la configuración de tu cuenta. <strong>Advertencia:</strong> si eliminas tu cuenta, se eliminarán permanentemente todos tus datos, publicaciones y archivos multimedia, y no se podrán recuperar.
             </p>
+            {/* Bloque para mostrar contraseña enmascarada con ícono de lápiz */}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+              <strong>Contraseña:</strong>
+              <span style={{
+                marginLeft: '1rem',
+                fontFamily: 'monospace',
+                letterSpacing: '0.3rem',
+                userSelect: 'none'
+              }}>
+                ********
+              </span>
+              <FontAwesomeIcon 
+                icon={faPencilAlt} 
+                style={{ marginLeft: 'auto', cursor: 'pointer' }} 
+                onClick={handleChangePassword} 
+              />
+            </div>
+            {/* Área de botones */}
             <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
               <button
                 onClick={handleChangePassword}
