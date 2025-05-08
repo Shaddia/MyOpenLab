@@ -8,7 +8,9 @@ import { faEdit, faTrashAlt, faCamera } from '@fortawesome/free-solid-svg-icons'
 
 // Función para formatear timestamps
 const formatTimestamp = (timestamp) => {
-  if (timestamp && typeof timestamp === 'object' && 'seconds' in timestamp) {
+  if (!timestamp) return 'Sin fecha';
+  if (typeof timestamp === 'string') return timestamp;
+  if (typeof timestamp === 'object' && 'seconds' in timestamp) {
     return new Date(timestamp.seconds * 1000).toLocaleString();
   }
   return 'Sin fecha';
@@ -461,7 +463,8 @@ const MiPerfil = () => {
                       {expandedPostId === post.id && (
                         <>
                           <p><strong>Herramientas:</strong> {post.herramientas}</p>
-                          <p><strong>Fecha de Creación:</strong> {formatTimestamp(post.fechaCreacion)}</p>
+                          {post.caracteristicas && <p><strong>Características:</strong> {post.caracteristicas}</p>}
+                          <p><strong>Fecha de Inicio:</strong> {formatTimestamp(post.fechaInicio)}</p>
                           <p><strong>Fecha de Fin:</strong> {formatTimestamp(post.fechaFin)}</p>
                           {post.archivoUrl && (
                             <p>
@@ -590,6 +593,9 @@ const MiPerfil = () => {
                           <p><strong>Ciudad:</strong> {evento.ciudad}</p>
                           <p><strong>Fecha de Evento:</strong> {evento.fechaEvento}</p>
                           <p><strong>Hora de Evento:</strong> {evento.horaEvento}</p>
+                          {evento.pais && <p><strong>País:</strong> {evento.pais}</p>}
+                          {evento.direccion && <p><strong>Dirección:</strong> {evento.direccion}</p>}
+                          {evento.proposito && <p><strong>Propósito:</strong> {evento.proposito}</p>}
                           {evento.archivoUrl && (
                             <p>
                               <a
