@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/home.css';
 import defaultAvatar from '../assets/default-avatar.png';
 
@@ -18,6 +19,7 @@ import { FaHeart, FaRegHeart, FaStar, FaRegStar } from 'react-icons/fa';
 
 const Eventos = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [usersData, setUsersData] = useState({});
 
@@ -62,6 +64,11 @@ const Eventos = () => {
       };
 
  const toggleReaction = async (id, type) => {
+    // Si el usuario es anónimo, redirige al login en modo registro
+    if (user.isAnonymous) {
+        navigate('/login?register=true');
+        return;
+    }
     const eventRef = doc(db, 'eventos', id);
     const eventSnap = await getDoc(eventRef);
     const eventData = eventSnap.data();

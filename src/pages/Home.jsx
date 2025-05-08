@@ -19,9 +19,11 @@ import {
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Layout from '../components/Layout';
 import { FaHeart, FaRegHeart, FaStar, FaRegStar } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
     const [projects, setProjects] = useState([]);
     const [usersData, setUsersData] = useState({});
@@ -71,6 +73,11 @@ const Home = () => {
 
 
     const handleOpenPopup = () => {
+        if(user.isAnonymous) {
+            // Redirige a la página de registro si el usuario es anónimo
+            navigate('/login?register=true');
+            return;
+        }
         setShowPopup(true);
     };
 
@@ -221,18 +228,21 @@ const Home = () => {
         }
     };
 
-    const toggleReaction = async (id, type) => {
-        const projectRef = doc(db, 'proyectos', id);
+    const toggleReaction = async (id, type, pubTipo) => {
+        if(user.isAnonymous) {
+            navigate('/login?register=true');
+            return;
+        }
+        const collectionName = pubTipo === 'evento' ? 'eventos' : 'proyectos';
+        const projectRef = doc(db, collectionName, id);
         const projectSnap = await getDoc(projectRef);
+        if (!projectSnap.exists()) return;
         const projectData = projectSnap.data();
-
         const field = type === 'like' ? 'likes' : 'favorites';
         const arr = projectData[field] || [];
-
         const updatedArr = arr.includes(user.uid)
             ? arr.filter(uid => uid !== user.uid)
             : [...arr, user.uid];
-
         await updateDoc(projectRef, { [field]: updatedArr });
     };
 
@@ -496,14 +506,14 @@ const Home = () => {
                 <div className="like-fav-buttons flex gap-4 items-center">
                     <button
                         className={`btn-like ${liked ? 'active' : ''}`}
-                        onClick={() => toggleReaction(project.id, 'like')}
+                        onClick={() => toggleReaction(project.id, 'like', project.tipo)}
                     >
                         {liked ? <FaHeart /> : <FaRegHeart />}
                         <span>{project.likes?.length || 0}</span>
                     </button>
                     <button
                         className={`btn-fav ${favorited ? 'active' : ''}`}
-                        onClick={() => toggleReaction(project.id, 'favorite')}
+                        onClick={() => toggleReaction(project.id, 'favorite', project.tipo)}
                     >
                         {favorited ? <FaStar /> : <FaRegStar />}
                         <span>{project.favorites?.length || 0}</span>

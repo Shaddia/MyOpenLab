@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
 // Páginas que ya tienes
@@ -25,17 +25,11 @@ function App() {
 
         {/* Configuración de las rutas */}
         <Routes>
+          {/* Rutas públicas */}
           <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/eventos" element={<Eventos />} />
-          {/* Ruta privada, solo accesible si el usuario está logueado */}
-          <Route
-            path="/home"
-            element={
-              <PrivateRoute>
-                <Home />
-              </PrivateRoute>
-            }
-          />
+          <Route path="/home" element={<Home />} />
           {/* Ruta privada, solo accesible si el usuario está logueado */}
           <Route
             path="/favoritos"
@@ -63,6 +57,8 @@ function App() {
               </PrivateRoute>
             }
           />
+          {/* En caso de rutas no definidas, redirige a login */}
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

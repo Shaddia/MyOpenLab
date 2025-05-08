@@ -1,27 +1,33 @@
-// Login.jsx
-import { useState } from 'react'; 
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
-import { useNavigate } from 'react-router-dom';
-import '../styles/Login.css';
-import { db } from '../services/firebase';
+import { getAuth, onAuthStateChanged, sendEmailVerification, reload, signInAnonymously } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../services/firebase';
-import { getAuth, onAuthStateChanged, sendEmailVerification, reload } from 'firebase/auth';
+import { db, storage } from '../services/firebase';
 import defaultAvatar from '../assets/default-avatar.png';
+import '../styles/Login.css';
 
 export default function Login() {
   const { login, register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState(''); // Nuevo estado para el nombre
-  const [phone, setPhone] = useState(''); // Nuevo estado para el teléfono
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  // Por defecto inicia en inicio de sesión
   const [isOnLogin, setIsOnLogin] = useState(true);
+  const location = useLocation();
   const navigate = useNavigate();
-
   const auth = getAuth();
 
-  // Verificar si el usuario está autenticado
+  // Si en la URL viene register=true, activa el modo registro
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('register') === 'true') {
+      setIsOnLogin(false);
+    }
+  }, [location.search]);
+
   onAuthStateChanged(auth, (user) => {
     if (user) {
       console.log('Usuario autenticado:', user.uid);
@@ -67,7 +73,6 @@ export default function Login() {
         await uploadBytes(storageRef, file);
         photoURL = await getDownloadURL(storageRef);
       } else {
-        // Asignar avatar por defecto
         photoURL = defaultAvatar;
       }
   
@@ -93,6 +98,15 @@ export default function Login() {
       }
     }
   };  
+
+  const handleAnonymousLogin = async () => {
+    try {
+      await signInAnonymously(auth);
+      navigate('/home');
+    } catch (error) {
+      console.error("Error al ingresar anónimamente", error);
+    }
+  };
 
   return (
     <div className="login-page">
@@ -179,6 +193,17 @@ export default function Login() {
               </div>
             </>
           )}
+          <span  //BOTON DE ACCEDER COMO ANONIMO
+            onClick={handleAnonymousLogin}
+            style={{ 
+              color: '#8a2be2', 
+              cursor: 'pointer', 
+              display: 'block', 
+              marginTop: '1rem' 
+            }}
+          >
+            Ingresar como Anónimo
+          </span>
         </div>
       </div>
     </div>
