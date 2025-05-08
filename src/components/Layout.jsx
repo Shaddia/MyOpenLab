@@ -15,21 +15,41 @@ import {
   faCalendar,
   faCalendarTimes,
 } from '@fortawesome/free-solid-svg-icons';
+import { useLanguage } from '../context/LanguageContext';
+
+const layoutTranslations = {
+  es: {
+    logo: "MiOpenLab",
+    explorar: "Explorar",
+    eventos: "Eventos",
+    miPerfil: "Mi perfil",
+    configuracion: "Configuración",
+    meGusta: "Me gusta",
+    favoritos: "Favoritos",
+    cerrarSesion: "Cerrar sesión"
+  },
+  en: {
+    logo: "MyOpenLab",
+    explorar: "Explore",
+    eventos: "Events",
+    miPerfil: "My Profile",
+    configuracion: "Settings",
+    meGusta: "Likes",
+    favoritos: "Favorites",
+    cerrarSesion: "Logout"
+  }
+};
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const texts = layoutTranslations[language];
 
   const handleLogout = (e) => {
     e.preventDefault();
-    // Clear any authentication tokens from localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    // You can clear any other auth data you might have stored
-    
-    // Redirect to login page
     navigate('/login', { replace: true });
-    
-    // Force a page reload if navigation doesn't work
     setTimeout(() => {
       window.location.href = '/';
     }, 100);
@@ -38,19 +58,19 @@ const Layout = ({ children }) => {
   return (
     <div className="home-container">
       <aside className="sidebar">
-        <h1 className="logo-box">MiOpenLab</h1>
+        <h1 className="logo-box">{texts.logo}</h1>
 
         <nav className="nav-links">
-          <Link to="/home"><FontAwesomeIcon icon={faCompass} /> Explorar</Link>
-          <Link to="/eventos"><FontAwesomeIcon icon={faCalendarTimes} /> Eventos</Link>
-          <Link to="/perfil"><FontAwesomeIcon icon={faUser} /> Mi perfil</Link>
-          <Link to="/configuracion"><FontAwesomeIcon icon={faGear} /> Configuración</Link>
+          <Link to="/home"><FontAwesomeIcon icon={faCompass} /> {texts.explorar}</Link>
+          <Link to="/eventos"><FontAwesomeIcon icon={faCalendarTimes} /> {texts.eventos}</Link>
+          <Link to="/perfil"><FontAwesomeIcon icon={faUser} /> {texts.miPerfil}</Link>
+          <Link to="/configuracion"><FontAwesomeIcon icon={faGear} /> {texts.configuracion}</Link>
 
           <hr className="divider" />
 
           <div className="account-section">
-            <Link to="/megusta"><FontAwesomeIcon icon={faHeart} /> Me gusta</Link>
-            <Link to="/favoritos"><FontAwesomeIcon icon={faStar} /> Favoritos</Link>
+            <Link to="/megusta"><FontAwesomeIcon icon={faHeart} /> {texts.meGusta}</Link>
+            <Link to="/favoritos"><FontAwesomeIcon icon={faStar} /> {texts.favoritos}</Link>
 
             <hr className="divider" />
 
@@ -58,7 +78,7 @@ const Layout = ({ children }) => {
               onClick={handleLogout} 
               className="logout-button"
             >
-              <FontAwesomeIcon icon={faRightFromBracket} /> Cerrar sesión
+              <FontAwesomeIcon icon={faRightFromBracket} /> {texts.cerrarSesion}
             </button>
           </div>
         </nav>
