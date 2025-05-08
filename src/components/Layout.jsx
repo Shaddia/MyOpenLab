@@ -44,7 +44,7 @@ const Layout = ({ children }) => {
           <Link to="/home"><FontAwesomeIcon icon={faCompass} /> Explorar</Link>
           <Link to="/eventos"><FontAwesomeIcon icon={faCalendarTimes} /> Eventos</Link>
           <Link to="/perfil"><FontAwesomeIcon icon={faUser} /> Mi perfil</Link>
-          <Link to="#"><FontAwesomeIcon icon={faGear} /> Configuración</Link>
+          <Link to="/configuracion"><FontAwesomeIcon icon={faGear} /> Configuración</Link>
 
           <hr className="divider" />
 

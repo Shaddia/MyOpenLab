@@ -47,3 +47,11 @@ button:focus {
     box-shadow: none !important;
     -webkit-tap-highlight-color: transparent;
 }
+/*html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #f2f4f4; /* Color de fondo gris 
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+}*/
