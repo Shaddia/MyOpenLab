@@ -50,13 +50,16 @@ const Eventos = () => {
 
     const formatDate = (timestamp) => {
         if (!timestamp) return '';
-        const date = timestamp.toDate();
-        return date.toLocaleDateString('es-ES', {
+        if (typeof timestamp === 'object' && typeof timestamp.toDate === 'function') {
+          const date = timestamp.toDate();
+          return date.toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
-        });
-    };
+          });
+        }
+        return timestamp; // Si ya es un string
+      };
 
  const toggleReaction = async (id, type) => {
     const eventRef = doc(db, 'eventos', id);
@@ -127,13 +130,21 @@ const Eventos = () => {
                                 </div>
                                 <div className="author-details">
                                     <h4 className="font-bold text-lg text-gray-800">{userName}</h4>
-                                    <p className="post-date text-sm text-gray-500">{formatDate(event.fechaCreacion)}</p>
+                                    <p
+                                        className="post-date text-sm text-gray-500"
+                                        style={{ fontSize: '0.7rem' }}  // Ajusta el tamaño de la letra
+                                    >
+                                        {formatDate(event.fechaCreacion)}
+                                    </p>
                                 </div>
                             </div>
 
-                            <div className="post-content text-gray-700 space-y-2">
+                            <div
+                                className="post-content text-gray-700 space-y-2"
+                                style={{ textAlign: 'left', fontSize: '0.9rem' }}  // Texto más pequeño
+                            >
                                 <p>
-                                    <strong className="text-gray-900">Evento:</strong> {event.nombre}
+                                    <strong className="text-gray-900">Evento:</strong> {event.nombre || 'Sin nombre'}
                                 </p>
                                 {event.descripcion && (
                                     <p><strong>Descripción:</strong> {event.descripcion}</p>
@@ -144,15 +155,40 @@ const Eventos = () => {
                                 {event.herramientas && (
                                     <p><strong>Herramientas:</strong> {event.herramientas}</p>
                                 )}
+                                {event.ciudad && (
+                                    <p><strong>Ciudad:</strong> {event.ciudad}</p>
+                                )}
+                                {event.fechaEvento && (
+                                    <p><strong>Fecha de Evento:</strong> {formatDate(event.fechaEvento)}</p>
+                                )}
+                                {event.horaEvento && (
+                                    <p><strong>Hora de Evento:</strong> {event.horaEvento}</p>
+                                )}
+                                {event.pais && (
+                                    <p><strong>País:</strong> {event.pais}</p>
+                                )}
+                                {event.direccion && (
+                                    <p><strong>Dirección:</strong> {event.direccion}</p>
+                                )}
+                                {event.proposito && (
+                                    <p><strong>Propósito:</strong> {event.proposito}</p>
+                                )}
                                 {event.archivoUrl && (
-                                    <div className="mt-2">
+                                    <div className="mt-2" style={{ textAlign: 'center' }}>  {/* Centrado del multimedia */}
                                         {event.archivoUrl.includes('video') ? (
-                                            <video controls style={{ maxWidth: '100%', borderRadius: '12px' }}>
+                                            <video
+                                                controls
+                                                style={{ maxWidth: '100%', borderRadius: '12px', margin: '0 auto' }}
+                                            >
                                                 <source src={event.archivoUrl} />
                                                 Tu navegador no soporta la etiqueta de video.
                                             </video>
                                         ) : (
-                                            <img src={event.archivoUrl} alt="Archivo" style={{ maxWidth: '100%', borderRadius: '12px' }} />
+                                            <img
+                                                src={event.archivoUrl}
+                                                alt="Archivo"
+                                                style={{ maxWidth: '100%', borderRadius: '12px', margin: '0 auto' }}
+                                            />
                                         )}
                                     </div>
                                 )}

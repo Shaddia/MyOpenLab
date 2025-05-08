@@ -21,44 +21,44 @@ const MeGusta = () => {
     const [usersData, setUsersData] = useState({});
 
     useEffect(() => {
-      const qProyectos = query(collection(db, 'proyectos'));
-      const qEventos = query(collection(db, 'eventos'));
-  
-      const unsubscribeProyectos = onSnapshot(qProyectos, async (snapshotProyectos) => {
-          const likedProjects = snapshotProyectos.docs
-              .map((doc) => ({ id: doc.id, tipo: 'proyecto', ...doc.data() }))
-              .filter((project) => project.likes?.includes(user.uid));
-  
-          const unsubscribeEventos = onSnapshot(qEventos, async (snapshotEventos) => {
-              const likedEventos = snapshotEventos.docs
-                  .map((doc) => ({ id: doc.id, tipo: 'evento', ...doc.data() }))
-                  .filter((event) => event.likes?.includes(user.uid));
-  
-              const combined = [...likedProjects, ...likedEventos];
-              setProjects(combined);
-  
-              const newUsersData = { ...usersData };
-              for (const item of combined) {
-                  if (!newUsersData[item.autorId]) {
-                      const userDoc = await getDoc(doc(db, 'users', item.autorId));
-                      if (userDoc.exists()) {
-                          newUsersData[item.autorId] = userDoc.data();
-                      }
-                  }
-              }
-              setUsersData(newUsersData);
-          });
-  
-          return () => {
-              unsubscribeEventos();
-          };
-      });
-  
-      return () => {
-          unsubscribeProyectos();
-      };
-  }, [user.uid, usersData]);
-  
+        const qProyectos = query(collection(db, 'proyectos'));
+        const qEventos = query(collection(db, 'eventos'));
+
+        const unsubscribeProyectos = onSnapshot(qProyectos, async (snapshotProyectos) => {
+            const likedProjects = snapshotProyectos.docs
+                .map((doc) => ({ id: doc.id, tipo: 'proyecto', ...doc.data() }))
+                .filter((project) => project.likes?.includes(user.uid));
+
+            const unsubscribeEventos = onSnapshot(qEventos, async (snapshotEventos) => {
+                const likedEventos = snapshotEventos.docs
+                    .map((doc) => ({ id: doc.id, tipo: 'evento', ...doc.data() }))
+                    .filter((event) => event.likes?.includes(user.uid));
+
+                const combined = [...likedProjects, ...likedEventos];
+                setProjects(combined);
+
+                const newUsersData = { ...usersData };
+                for (const item of combined) {
+                    if (!newUsersData[item.autorId]) {
+                        const userDoc = await getDoc(doc(db, 'users', item.autorId));
+                        if (userDoc.exists()) {
+                            newUsersData[item.autorId] = userDoc.data();
+                        }
+                    }
+                }
+                setUsersData(newUsersData);
+            });
+
+            return () => {
+                unsubscribeEventos();
+            };
+        });
+
+        return () => {
+            unsubscribeProyectos();
+        };
+    }, [user.uid, usersData]);
+
 
     const formatDate = (timestamp) => {
         if (!timestamp) return '';
@@ -70,20 +70,30 @@ const MeGusta = () => {
         });
     };
 
-    const toggleReaction = async (id, type) => {
-        const projectRef = doc(db, 'proyectos', id);
-        const projectSnap = await getDoc(projectRef);
-        const projectData = projectSnap.data();
-
-        const field = type === 'like' ? 'likes' : 'favorites';
-        const arr = projectData[field] || [];
-
-        const updatedArr = arr.includes(user.uid)
+    const toggleReaction = async (id, type, tipo) => {
+        try {
+          const collectionName = tipo === 'evento' ? 'eventos' : 'proyectos';
+          const docRef = doc(db, collectionName, id);
+          const docSnap = await getDoc(docRef);
+      
+          if (!docSnap.exists()) {
+            console.error('Documento no encontrado:', id);
+            return;
+          }
+      
+          const data = docSnap.data();
+          
+          const field = type === 'like' ? 'likes' : 'favorites';
+          const arr = data[field] || [];
+          const updatedArr = arr.includes(user.uid)
             ? arr.filter((uid) => uid !== user.uid)
             : [...arr, user.uid];
-
-        await updateDoc(projectRef, { [field]: updatedArr });
-    };
+      
+          await updateDoc(docRef, { [field]: updatedArr });
+        } catch (error) {
+          console.error('Error toggling reaction:', error);
+        }
+      };
 
     return (
         <Layout>
@@ -161,14 +171,14 @@ const MeGusta = () => {
                                 <div className="like-fav-buttons flex gap-4 items-center">
                                     <button
                                         className={`btn-like ${liked ? 'active' : ''}`}
-                                        onClick={() => toggleReaction(project.id, 'like')}
+                                        onClick={() => toggleReaction(project.id, 'like', project.tipo)}
                                     >
                                         {liked ? <FaHeart /> : <FaRegHeart />}
                                         <span>{project.likes?.length || 0}</span>
                                     </button>
                                     <button
                                         className={`btn-fav ${favorited ? 'active' : ''}`}
-                                        onClick={() => toggleReaction(project.id, 'favorite')}
+                                        onClick={() => toggleReaction(project.id, 'favorite', project.tipo)}
                                     >
                                         {favorited ? <FaStar /> : <FaRegStar />}
                                         <span>{project.favorites?.length || 0}</span>

@@ -230,13 +230,24 @@ const Home = () => {
 
     const formatDate = (timestamp) => {
         if (!timestamp) return '';
-        const date = timestamp.toDate();
-        return date.toLocaleDateString('es-ES', {
+        if (typeof timestamp === 'object' && typeof timestamp.toDate === 'function') {
+          const date = timestamp.toDate();
+          return date.toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
-        });
-    };
+            day: 'numeric',
+          });
+        } else {
+          // Si ya es un string o Date, se intenta convertir a Date
+          const date = new Date(timestamp);
+          if (isNaN(date.getTime())) return '';
+          return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+        }
+      };
 
     const getFechaFin = (fechaFin) => {
         const hoy = new Date().toISOString().split('T')[0];
@@ -374,103 +385,126 @@ const Home = () => {
                 <h3>Publicaciones</h3>
                 {projects.length === 0 && <p>No hay proyectos aún.</p>}
                 {projects.map((project) => {
-                    const userInfo = usersData[project.autorId] || {};
-                    const userPhoto = userInfo.photoURL || defaultAvatar;
-                    const userName = userInfo.name || project.autorNombre || 'Usuario';
+    const userInfo = usersData[project.autorId] || {};
+    const userPhoto = userInfo.photoURL || defaultAvatar;
+    const userName = userInfo.name || project.autorNombre || 'Usuario';
 
-                    const liked = project.likes?.includes(user.uid);
-                    const favorited = project.favorites?.includes(user.uid);
+    const liked = project.likes?.includes(user.uid);
+    const favorited = project.favorites?.includes(user.uid);
 
-                    return (
-                        <div
-                            key={project.id}
-                            className="post-card bg-white shadow-md rounded-2xl p-5 mb-6"
-                            style={{ maxWidth: '568px', marginInline: 'auto' }}
-                        >
-                            <div className="post-header flex items-center mb-4">
-                                <div className="author-photo mr-4" style={{ width: '60px', height: '60px' }}>
-                                    <img
-                                        src={userPhoto}
-                                        alt="Avatar"
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover',
-                                            borderRadius: '50%',
-                                            border: '2px solid #ddd',
-                                        }}
-                                        onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
-                                    />
-                                </div>
-                                <div className="author-details">
-                                    <h4 className="font-bold text-lg text-gray-800">{userName}</h4>
-                                    <p className="post-date text-sm text-gray-500">{formatDate(project.fechaCreacion)}</p>
-                                </div>
-                            </div>
+    return (
+        <div
+            key={project.id}
+            className="post-card bg-white shadow-md rounded-2xl p-5 mb-6"
+            style={{ maxWidth: '568px', marginInline: 'auto' }}
+        >
+            <div className="post-header flex items-center mb-4">
+                <div className="author-photo mr-4" style={{ width: '60px', height: '60px' }}>
+                    <img
+                        src={userPhoto}
+                        alt="Avatar"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '50%',
+                            border: '2px solid #ddd',
+                        }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
+                    />
+                </div>
+                <div className="author-details">
+                    <h4 className="font-bold text-lg text-gray-800">{userName}</h4>
+                    <p
+                        className="post-date text-gray-500"
+                        style={{ fontSize: '0.7rem' }}  // Fecha en gris y más pequeña
+                    >
+                        {formatDate(project.fechaCreacion)}
+                    </p>
+                </div>
+            </div>
 
-                            <div className="post-content text-gray-700 space-y-2">
-                                <p>
-                                    <strong className="text-gray-900">{project.tipo === 'evento' ? 'Evento' : 'Proyecto'}:</strong> {project.nombre}
-                                </p>
-                                {project.descripcion && (
-                                    <p><strong>Descripción:</strong> {project.descripcion}</p>
-                                )}
-                                {project.caracteristicas && (
-                                    <p><strong>Características:</strong> {project.caracteristicas}</p>
-                                )}
-                                {project.herramientas && (
-                                    <p><strong>Herramientas:</strong> {project.herramientas}</p>
-                                )}
-                                {project.archivoUrl && (
-                                    <div className="mt-2">
-                                        {project.archivoUrl.includes('video') ? (
-                                            <video controls style={{ maxWidth: '100%', borderRadius: '12px' }}>
-                                                <source src={project.archivoUrl} />
-                                                Tu navegador no soporta la etiqueta de video.
-                                            </video>
-                                        ) : (
-                                            <img src={project.archivoUrl} alt="Archivo" style={{ maxWidth: '100%', borderRadius: '12px' }} />
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+            <div
+                className="post-content text-gray-700 space-y-2"
+                style={{ textAlign: 'left', fontSize: '0.9rem' }}  // Alinea el texto a la izquierda
+            >
+                <p>
+                    <strong className="text-gray-900">
+                        {project.tipo === 'evento' ? 'Evento' : 'Proyecto'}:
+                    </strong>{' '}
+                    {project.nombre || 'Sin nombre'}
+                </p>
+                <p><strong>Descripción:</strong> {project.descripcion || 'Sin descripción'}</p>
+                <p><strong>Características:</strong> {project.caracteristicas || 'No especificadas'}</p>
+                <p><strong>Herramientas:</strong> {project.herramientas || 'No especificadas'}</p>
+                {project.tipo === 'proyecto' && (
+                    <>
+                        <p><strong>Fecha de Inicio:</strong> {formatDate(project.fechaInicio) || 'No especificada'}</p>
+                        <p><strong>Fecha de Fin:</strong> {formatDate(project.fechaFin) || 'No especificada'}</p>
+                    </>
+                )}
+                {project.tipo === 'evento' && (
+                    <>
+                        <p><strong>Ciudad:</strong> {project.ciudad || 'No especificada'}</p>
+                        <p><strong>País:</strong> {project.pais || 'No especificado'}</p>
+                        <p><strong>Dirección:</strong> {project.direccion || 'No especificada'}</p>
+                        <p><strong>Propósito:</strong> {project.proposito || 'No especificado'}</p>
+                        <p><strong>Fecha de Evento:</strong> {formatDate(project.fechaEvento) || 'No especificada'}</p>
+                        <p><strong>Hora de Evento:</strong> {project.horaEvento || 'No especificada'}</p>
+                    </>
+                )}
+                {project.archivoUrl && (
+                    <div className="mt-2" style={{ textAlign: 'center' }}>  {/* Centra el archivo multimedia */}
+                        {project.archivoUrl.includes('video') ? (
+                            <video controls style={{ maxWidth: '100%', borderRadius: '12px', margin: '0 auto' }}>
+                                <source src={project.archivoUrl} />
+                                Tu navegador no soporta la etiqueta de video.
+                            </video>
+                        ) : (
+                            <img
+                                src={project.archivoUrl}
+                                alt="Archivo"
+                                style={{ maxWidth: '100%', borderRadius: '12px', margin: '0 auto' }}
+                            />
+                        )}
+                    </div>
+                )}
+            </div>
 
-                            <div className="post-action-bar flex justify-between items-center">
-    {/* Botones de Editar y Eliminar alineados a la izquierda */}
-    {project.autorId === user.uid && (
-        <div className="edit-delete-buttons flex gap-2">
-            <button onClick={() => handleEdit(project)} className="text-blue-600">
-                Editar
-            </button>
-            <button onClick={() => handleDelete(project.id)} className="text-red-600">
-                Eliminar
-            </button>
+            <div className="post-action-bar flex justify-between items-center">
+                {/* Botones de Editar y Eliminar alineados a la izquierda */}
+                {project.autorId === user.uid && (
+                    <div className="edit-delete-buttons flex gap-2">
+                        <button onClick={() => handleEdit(project)} className="text-blue-600">
+                            Editar
+                        </button>
+                        <button onClick={() => handleDelete(project.id)} className="text-red-600">
+                            Eliminar
+                        </button>
+                    </div>
+                )}
+
+                {/* Botones de Me Gusta y Favorito alineados a la derecha */}
+                <div className="like-fav-buttons flex gap-4 items-center">
+                    <button
+                        className={`btn-like ${liked ? 'active' : ''}`}
+                        onClick={() => toggleReaction(project.id, 'like')}
+                    >
+                        {liked ? <FaHeart /> : <FaRegHeart />}
+                        <span>{project.likes?.length || 0}</span>
+                    </button>
+                    <button
+                        className={`btn-fav ${favorited ? 'active' : ''}`}
+                        onClick={() => toggleReaction(project.id, 'favorite')}
+                    >
+                        {favorited ? <FaStar /> : <FaRegStar />}
+                        <span>{project.favorites?.length || 0}</span>
+                    </button>
+                </div>
+            </div>
         </div>
-    )}
-
-    {/* Botones de Me Gusta y Favorito alineados a la derecha */}
-    <div className="like-fav-buttons flex gap-4 items-center">
-        <button
-            className={`btn-like ${liked ? 'active' : ''}`}
-            onClick={() => toggleReaction(project.id, 'like')}
-        >
-            {liked ? <FaHeart /> : <FaRegHeart />}
-            <span>{project.likes?.length || 0}</span>
-        </button>
-        <button
-            className={`btn-fav ${favorited ? 'active' : ''}`}
-            onClick={() => toggleReaction(project.id, 'favorite')}
-        >
-            {favorited ? <FaStar /> : <FaRegStar />}
-            <span>{project.favorites?.length || 0}</span>
-        </button>
-    </div>
-</div>
-
-
-                        </div>
-                    );
-                })}
+    );
+})}
 
 
             </div>
