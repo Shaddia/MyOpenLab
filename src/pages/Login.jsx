@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
-import { getAuth, onAuthStateChanged, sendEmailVerification, reload, signInAnonymously } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged, sendEmailVerification, reload, signInAnonymously, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore'; // Asegúrate de importar getDoc
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../services/firebase';
 import defaultAvatar from '../assets/default-avatar.png';
+import { FaGoogle } from 'react-icons/fa';
 import '../styles/Login.css';
 
 export default function Login() {
@@ -14,13 +15,12 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  // Por defecto inicia en inicio de sesión
   const [isOnLogin, setIsOnLogin] = useState(true);
+  const [userDataState, setUserDataState] = useState(null); // Nuevo estado para userData
   const location = useLocation();
   const navigate = useNavigate();
   const auth = getAuth();
 
-  // Si en la URL viene register=true, activa el modo registro
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     if (queryParams.get('register') === 'true') {
@@ -52,22 +52,22 @@ export default function Login() {
     try {
       const userCredential = await register(email, password);
       const { user } = userCredential;
-  
+
       await sendEmailVerification(user);
       alert('Se ha enviado un correo de verificación. Por favor revisa tu bandeja de entrada y haz clic en el enlace.');
       alert('Después de verificar tu correo, haz clic en "Aceptar" para continuar.');
-  
+
       await reload(user);
-  
+
       if (!user.emailVerified) {
         alert('Tu correo aún no ha sido verificado. Por favor verifica tu correo antes de continuar.');
         return;
       }
-  
+
       const fileInput = document.getElementById('profile-photo');
       const file = fileInput?.files[0];
       let photoURL = '';
-  
+
       if (file) {
         const storageRef = ref(storage, `profilePictures/${user.uid}`);
         await uploadBytes(storageRef, file);
@@ -75,7 +75,7 @@ export default function Login() {
       } else {
         photoURL = defaultAvatar;
       }
-  
+
       if (user && user.uid) {
         await setDoc(doc(db, 'users', user.uid), {
           email: user.email,
@@ -84,7 +84,7 @@ export default function Login() {
           photoURL: photoURL,
           emailVerified: user.emailVerified,
         });
-  
+
         navigate('/perfil');
       } else {
         alert('Error: El usuario no está autenticado o no tiene UID.');
@@ -97,7 +97,7 @@ export default function Login() {
         alert('Error al registrarse: ' + error.message);
       }
     }
-  };  
+  };
 
   const handleAnonymousLogin = async () => {
     try {
@@ -108,35 +108,105 @@ export default function Login() {
     }
   };
 
+  // Función para ingresar con Google
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      let finalPhotoURL = defaultAvatar;
+      if (user.photoURL) {
+        finalPhotoURL = user.photoURL; // Usa la URL original sin modificar
+      } else if (
+        user.providerData &&
+        user.providerData.length > 0 &&
+        user.providerData[0].photoURL
+      ) {
+        finalPhotoURL = user.providerData[0].photoURL;
+      }
+      
+      console.log("Final photo URL:", finalPhotoURL); // Verifica en consola
+
+      const userData = {
+        email: user.email,
+        name: user.displayName || (user.providerData[0] && user.providerData[0].displayName) || '',
+        phone: user.phoneNumber || (user.providerData[0] && user.providerData[0].phoneNumber) || '',
+        photoURL: finalPhotoURL,
+        emailVerified: user.emailVerified
+      };
+
+      // Guarda data en estado para utilizarla en el render
+      setUserDataState(userData);
+
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        await setDoc(userDocRef, userData);
+      } else {
+        await setDoc(userDocRef, userData, { merge: true });
+      }
+      navigate('/home');
+    } catch (error) {
+      console.error("Error al ingresar con Google", error);
+    }
+  };
+
   return (
     <div className="login-page">
       <div className="login-left">
         <p className="login-left-overlay">MiOpenLab</p>
       </div>
-
       <div className="login-right">
         <div className="login-container">
           {isOnLogin ? (
             <>
               <h2>Iniciar Sesión</h2>
               <p>Por favor ingresa tus credenciales abajo.</p>
-              <form onSubmit={handleLogin}>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <input
-                  type="password"
-                  placeholder="Ingresa tu contraseña"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button type="submit">Iniciar Sesión</button>
-              </form>
+              {isOnLogin && (
+                <>
+                  <form onSubmit={handleLogin}>
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                    <input
+                      type="password"
+                      placeholder="Ingresa tu contraseña"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button type="submit" className="login-button">
+                      Iniciar Sesión
+                    </button>
+                  </form>
+                  {/* Botón para ingresar con Google */}
+                  <button
+                    onClick={handleGoogleLogin}
+                    type="button"
+                    className="login-button"
+                    style={{
+                      marginTop: '1rem',
+                      backgroundColor: 'transparent',
+                      border: '1px solid #8a2be2',
+                      color: '#8a2be2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '53.7rem', // Ajusta aquí el ancho (puedes probar 'auto' o un valor fijo)
+                      padding: '0.5rem 1rem'
+                    }}
+                  >
+                    <FaGoogle style={{ fontSize: '24px', marginRight: '0.5rem' }} />
+                    Ingresar con Google
+                  </button>
+                </>
+              )}
               <div className="register-link">
                 ¿No tienes una cuenta?{' '}
                 <a href="#" onClick={() => setIsOnLogin(false)}>
@@ -193,17 +263,25 @@ export default function Login() {
               </div>
             </>
           )}
-          <span  //BOTON DE ACCEDER COMO ANONIMO
+          <span
             onClick={handleAnonymousLogin}
-            style={{ 
-              color: '#8a2be2', 
-              cursor: 'pointer', 
-              display: 'block', 
-              marginTop: '1rem' 
+            style={{
+              color: '#8a2be2',
+              cursor: 'pointer',
+              display: 'block',
+              marginTop: '1rem'
             }}
           >
             Ingresar como Anónimo
           </span>
+          {userDataState && (
+            <img 
+              src={userDataState.photoURL} 
+              alt="Foto de perfil" 
+              crossOrigin="anonymous"
+              style={{ width: '150px', height: '150px', borderRadius: '50%' }}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { db } from '../services/firebase';
 import Layout from '../components/Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt, faCamera } from '@fortawesome/free-solid-svg-icons';
+import defaultAvatar from '../assets/default-avatar.png';
 
 // Función para formatear timestamps
 const formatTimestamp = (timestamp) => {
@@ -249,6 +250,11 @@ const MiPerfil = () => {
               <img
                 src={userData.photoURL}
                 alt="Foto de perfil"
+                crossOrigin="anonymous"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = defaultAvatar;
+                }}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
