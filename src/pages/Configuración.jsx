@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/useAuth';
@@ -34,6 +34,9 @@ const Configuración = () => {
   const navigate = useNavigate();
   const auth = getAuth();
   const { language, setLanguage } = useLanguage();
+
+  // Estado para controlar qué panel se muestra: 'datos', 'escritorio' o 'notificaciones'
+  const [selectedPanel, setSelectedPanel] = useState('datos');
 
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
@@ -112,93 +115,139 @@ const Configuración = () => {
     setLanguage(e.target.value);
   };
 
+  const handleDarkMode = () => {
+    alert(language === 'es' ? "Dark Mode activado" : "Dark Mode activated");
+  };
+
   return (
     <Layout>
-      <div style={{ display: 'flex', padding: '2rem', maxWidth: '100%', margin: '0 auto' }}>
-        {/* Contenido principal */}
-        <div style={{ flex: '1 1 70%', paddingRight: '1rem' }}>
-          <h2 style={{ marginBottom: '1rem', textAlign: 'center' }}>
-            {translations[language].accountSettings}
-          </h2>
+      <div
+        style={{
+          display: 'flex',
+          padding: '2rem',
+          maxWidth: '100%',
+          margin: '0 auto',
+          position: 'relative'
+        }}
+      >
+        {/* Contenedor principal para el contenido de configuración */}
+        <div
+          style={{
+            flex: '1',
+            marginRight: '370px', // Reserva el espacio del menú lateral fijo (350px + 20px de espacio extra)
+            display: 'flex',
+            justifyContent: 'center'
+          }}
+        >
           <div style={{
-            border: '1px solid #ddd',
-            borderRadius: '8px',
-            padding: '1.5rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            backgroundColor: '#fff'
+            width: '100%',
+            maxWidth: '600px'
           }}>
-            <p style={{ marginBottom: '1.5rem', color: '#333' }}
-               dangerouslySetInnerHTML={{ __html: translations[language].accountWarning }}>
-            </p>
-            {/* Bloque para mostrar contraseña enmascarada con ícono de lápiz */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-              <strong>{translations[language].password}</strong>
-              <span style={{
-                marginLeft: '1rem',
-                fontFamily: 'monospace',
-                letterSpacing: '0.3rem',
-                userSelect: 'none'
-              }}>
-                ********
-              </span>
-              <FontAwesomeIcon 
-                icon={faPencilAlt} 
-                style={{ marginLeft: 'auto', cursor: 'pointer' }} 
-                onClick={handleChangePassword} 
-              />
-            </div>
-            {/* Bloque para selección de Idioma */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-              <strong>{translations[language].language}</strong>
-              <select 
-                value={language} 
-                onChange={handleIdiomaChange} 
-                style={{ marginLeft: '1rem', padding: '0.3rem 0.5rem', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                <option value="es">Español</option>
-                <option value="en">Inglés</option>
-              </select>
-            </div>
-            {/* Área de botones */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-              {/* Se remueve el botón de cambiar contraseña ya que se usa el ícono */}
-              <button
-                onClick={handleDeleteAccount}
-                style={{
-                  backgroundColor: '#922b21',
-                  color: 'white',
-                  padding: '0.5rem 1rem',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  marginBottom: '1rem',
-                  flex: '1 0 45%'
-                }}
-              >
-                {translations[language].deleteAccount}
-              </button>
-            </div>
+            {selectedPanel === 'datos' && (
+              <>
+                <h2 style={{ marginBottom: '1rem', textAlign: 'center' }}>
+                  {translations[language].accountSettings}
+                </h2>
+                <div style={{
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  padding: '1.5rem',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  backgroundColor: '#fff'
+                }}>
+                  {/* Contenido de configuración de cuenta */}
+                  <p style={{ marginBottom: '1.5rem', color: '#333' }}
+                    dangerouslySetInnerHTML={{ __html: translations[language].accountWarning }}>
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                    <strong>{translations[language].password}</strong>
+                    <span style={{
+                      marginLeft: '1rem',
+                      fontFamily: 'monospace',
+                      letterSpacing: '0.3rem',
+                      userSelect: 'none'
+                    }}>
+                      ********
+                    </span>
+                    <FontAwesomeIcon
+                      icon={faPencilAlt}
+                      style={{ marginLeft: 'auto', cursor: 'pointer' }}
+                      onClick={handleChangePassword}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                    <strong>{translations[language].language}</strong>
+                    <select
+                      value={language}
+                      onChange={handleIdiomaChange}
+                      style={{ marginLeft: '1rem', padding: '0.3rem 0.5rem', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      <option value="es">Español</option>
+                      <option value="en">English</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={handleDeleteAccount}
+                      style={{
+                        backgroundColor: '#8a2be2',
+                        color: 'white',
+                        padding: '0.5rem 1rem',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        marginBottom: '1rem',
+                        flex: '1 0 45%'
+                      }}
+                    >
+                      {translations[language].deleteAccount}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+            {selectedPanel === 'escritorio' && (
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <button
+                  onClick={handleDarkMode}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {language === 'es' ? "Cambiar a Dark Mode" : "Switch to Dark Mode"}
+                </button>
+              </div>
+            )}
+            {selectedPanel === 'notificaciones' && (
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <p>{language === 'es' ? "Contenido de Notificaciones" : "Notifications content"}</p>
+              </div>
+            )}
           </div>
         </div>
-        {/* Menú lateral a la derecha */}
-        <div style={{ display: 'flex', width: '100%' }}>
-          <div style={{ flex: 1, paddingRight: '1rem' }}>
-            {/* Aquí puede ir otro contenido */}
-          </div>
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            right: 0,
-            backgroundColor: '#1c2833',
-            width: '350px',
-            minHeight: '100vh',
-            padding: '1rem',
-            paddingTop: '100px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-            zIndex: 1000
-          }}>
+
+        {/* Menú lateral fijo */}
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          backgroundColor: '#1c2833',
+          width: '350px',
+          minHeight: '100vh',
+          padding: '1rem',
+          paddingTop: '100px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+          zIndex: 1000
+        }}>
+          {/* Opciones del menú lateral */}
+          <div className="menu-option-container" onClick={() => setSelectedPanel('datos')}>
             <span className="menu-option">
               {language === 'es' ? "Datos de Cuenta" : "Account Details"}
               <span style={{
@@ -210,7 +259,9 @@ const Configuración = () => {
                 {language === 'es' ? "Administración de cuenta" : "Account management"}
               </span>
             </span>
-            <hr style={{ borderTop: '0.5px solid #aaa', width: '80%', transform: 'scaleY(0.5)' }} />
+          </div>
+          <hr style={{ borderTop: '0.5px solid #aaa', width: '80%', transform: 'scaleY(0.5)' }} />
+          <div className="menu-option-container" onClick={() => setSelectedPanel('escritorio')}>
             <span className="menu-option">
               {language === 'es' ? "Escritorio" : "Dashboard"}
               <span style={{
@@ -222,7 +273,9 @@ const Configuración = () => {
                 {language === 'es' ? "Apariencia y personalización" : "Look and customization"}
               </span>
             </span>
-            <hr style={{ borderTop: '0.5px solid #aaa', width: '80%', transform: 'scaleY(0.5)' }} />
+          </div>
+          <hr style={{ borderTop: '0.5px solid #aaa', width: '80%', transform: 'scaleY(0.5)' }} />
+          <div className="menu-option-container" onClick={() => setSelectedPanel('notificaciones')}>
             <span className="menu-option">
               {language === 'es' ? "Notificaciones" : "Notifications"}
               <span style={{

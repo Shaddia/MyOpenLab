@@ -231,7 +231,8 @@ const MiPerfil = () => {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'row-reverse', padding: '2rem', gap: '2rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem' }}>
+       
+        <div className='profile-container' style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem' }}>
           <div
             style={{
               width: '130px',
@@ -294,7 +295,8 @@ const MiPerfil = () => {
             <FontAwesomeIcon icon={faCamera} />
           </button>
           {/* Información del perfil */}
-          <div
+          
+          <div className='profile-container'
             style={{
               backgroundColor: '#fff',
               borderRadius: '10px',
@@ -303,12 +305,14 @@ const MiPerfil = () => {
               maxWidth: '950px',
               width: '100%',
               textAlign: 'center',
+              color: 'white'
             }}
           >
-            <h3 style={{ marginBottom: '2rem', color: '#6a1bbd' }}>Información del Perfil</h3>
+            <h3 style={{ marginBottom: '2rem', color: 'white' }}>Información del Perfil</h3>
             <p><strong>Nombre:</strong> {userData?.name || 'No especificado'}</p>
             <p><strong>Email:</strong> {userData?.email || user.email}</p>
             <p><strong>Teléfono:</strong> {userData?.phone || 'No registrado'}</p>
+
             {/* Aquí puedes incluir el botón de editar si deseas */}
             {!isEditing ? (
               <button
@@ -359,6 +363,7 @@ const MiPerfil = () => {
               </div>
             )}
           </div>
+      
         </div>
 
         <div
@@ -376,7 +381,7 @@ const MiPerfil = () => {
           {/* Mostrar Proyectos */}
           <div style={{ marginTop: '2rem' }}>
             <div style={{
-              backgroundColor: '#8a2be2',
+              backgroundColor: '#1c2833',
               color: '#fff',
               padding: '0.4rem 0.4rem',
               borderRadius: '5px',
@@ -403,13 +408,13 @@ const MiPerfil = () => {
                       fontSize: '0.85rem',
                       position: 'relative',
                       margin: '0 auto',
-                      backgroundColor: '#b3bac0', //COLOR TARJETA ABAJO
+                      backgroundColor: '#e8daef', //COLOR TARJETA ABAJO
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >
                     <div style={{
-                      backgroundColor: '#8a2be2', //COLOR TARJETA BARRA
+                      backgroundColor: '#1c2833', //COLOR TARJETA BARRA
                       color: 'white',
                       padding: '0.5rem 0.75rem',
                       fontWeight: 'bold',
@@ -505,7 +510,7 @@ const MiPerfil = () => {
           {/* Mostrar Eventos */}
           <div style={{ marginTop: '2rem' }}>
             <div style={{
-              backgroundColor: '#8a2be2',
+              backgroundColor: '#1c2833',
               color: '#fff',
               padding: '0.4rem 0.4rem',
               borderRadius: '5px',
@@ -522,7 +527,7 @@ const MiPerfil = () => {
                     onClick={() => toggleExpandEvento(evento.id)}
                     style={{
                       width: '320px', // Igual que la tarjeta de proyecto
-                      backgroundColor: '#a18594 ', //COLOR TARJETA ABAJO
+                      backgroundColor: '#e8daef', //COLOR TARJETA ABAJO
                       borderRadius: '10px',
                       clipPath: 'inset(0 round 10px)',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
@@ -536,7 +541,7 @@ const MiPerfil = () => {
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
                     <div style={{
-                      backgroundColor: '#8a2be2',
+                      backgroundColor: '#1c2833',
                       color: 'white',
                       padding: '0.5rem 0.75rem',
                       fontWeight: 'bold',

@@ -644,13 +644,33 @@ background-color: #ffebeb;
   font-size: 1.3rem;
   color: white;
   cursor: pointer;
-  transition: color 0.2s;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 .menu-option:hover {
-  color: #ddd;
+  background-color: #273746; /* Cambia a un color que contraste */
+  transform: scale(1.05);
+  cursor: pointer;
 }
 
+.menu-option-container {
+  padding: 10px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.menu-option-container:hover {
+  background-color: #273746; /* Color de resaltado menu derecho*/
+  transform: scale(1.03);
+  cursor: pointer;
+}
+.profile-container {
+    background-color: #1c2833 !important;
+    /* Puedes agregar más propiedades (padding, border-radius, etc.) si lo requieres */
+}
+.main-profile-info {
+    color: white;
+}
 /*.main-container {
   background-color: #f2f4f4;
   margin: 0;
