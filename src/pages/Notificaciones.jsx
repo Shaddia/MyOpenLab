@@ -74,9 +74,10 @@ const Notificaciones = () => {
               style={{
                 backgroundColor: '#f3e8ff',
                 border: '1px solid #7e22ce',
-                borderRadius: '8px',
-                padding: '0.75rem',
-                marginBottom: '0.5rem',
+                borderRadius: '11px',
+                padding: '0.25rem',
+                marginBottom: '0.30rem',
+                marginTop: '10px',
                 display: 'flex',
                 alignItems: 'center'
               }}
