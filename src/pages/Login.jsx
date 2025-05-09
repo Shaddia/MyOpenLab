@@ -75,6 +75,9 @@ export default function Login() {
       } else {
         photoURL = defaultAvatar;
       }
+      
+      // Asigna el username basado en el email (parte anterior al @)
+      const username = email.slice(0, email.indexOf('@'));
 
       if (user && user.uid) {
         await setDoc(doc(db, 'users', user.uid), {
@@ -83,6 +86,7 @@ export default function Login() {
           phone: phone,
           photoURL: photoURL,
           emailVerified: user.emailVerified,
+          username: username // nuevo campo asignado
         });
 
         navigate('/perfil');
@@ -117,7 +121,7 @@ export default function Login() {
 
       let finalPhotoURL = defaultAvatar;
       if (user.photoURL) {
-        finalPhotoURL = user.photoURL; // Usa la URL original sin modificar
+        finalPhotoURL = user.photoURL; // usa la URL original sin modificar
       } else if (
         user.providerData &&
         user.providerData.length > 0 &&
@@ -126,14 +130,18 @@ export default function Login() {
         finalPhotoURL = user.providerData[0].photoURL;
       }
       
-      console.log("Final photo URL:", finalPhotoURL); // Verifica en consola
+      console.log("Final photo URL:", finalPhotoURL);
+
+      // Calcula el username derivado del email
+      const username = user.email.slice(0, user.email.indexOf('@'));
 
       const userData = {
         email: user.email,
         name: user.displayName || (user.providerData[0] && user.providerData[0].displayName) || '',
         phone: user.phoneNumber || (user.providerData[0] && user.providerData[0].phoneNumber) || '',
         photoURL: finalPhotoURL,
-        emailVerified: user.emailVerified
+        emailVerified: user.emailVerified,
+        username: username  // nuevo campo asignado
       };
 
       // Guarda data en estado para utilizarla en el render

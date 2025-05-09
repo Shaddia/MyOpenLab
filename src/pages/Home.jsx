@@ -20,6 +20,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Layout from '../components/Layout';
 import { FaHeart, FaRegHeart, FaStar, FaRegStar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import FollowButton from '../components/FollowButton';  // Asegúrate de importarlo
 
 const Home = () => {
     const { user } = useAuth();
@@ -438,7 +439,7 @@ const Home = () => {
                             className="post-card bg-white shadow-md rounded-2xl p-5 mb-6"
                             style={{ maxWidth: '568px', marginInline: 'auto' }}
                         >
-                            <div className="post-header flex items-center mb-4">
+                            <div className="post-header flex items-start mb-4">
                                 <div className="author-photo mr-4" style={{ width: '60px', height: '60px' }}>
                                     <img
                                         src={userPhoto}
@@ -453,12 +454,16 @@ const Home = () => {
                                         onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
                                     />
                                 </div>
-                                <div className="author-details">
-                                    <h4 className="font-bold text-lg text-gray-800">{userName}</h4>
-                                    <p
-                                        className="post-date text-gray-500"
-                                        style={{ fontSize: '0.7rem' }}  // Fecha en gris y más pequeña
-                                    >
+                                <div className="author-info" style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div className="author-details flex flex-row items-center gap-2">
+                                        <h4 className="font-bold text-lg text-gray-800" style={{ margin: 0, display: 'inline-block' }}>
+                                            {userName}
+                                        </h4>
+                                        {project.autorId !== user.uid && (
+                                            <FollowButton targetUid={project.autorId} />
+                                        )}
+                                    </div>
+                                    <p className="post-date text-gray-500" style={{ fontSize: '0.7rem', margin: 0 }}>
                                         {formatDate(project.fechaCreacion)}
                                     </p>
                                 </div>
