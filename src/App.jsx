@@ -17,6 +17,7 @@ import viteLogo from '/vite.svg';
 import Eventos from './pages/Eventos';
 import Configuración from './pages/Configuración';
 import Amigos from './pages/Amigos';
+import Notificaciones from './pages/Notificaciones';
 
 
 function App() {
@@ -75,6 +76,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Amigos />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/notificaciones"
+              element={
+                <PrivateRoute>
+                  <Notificaciones />
                 </PrivateRoute>
               }
             />

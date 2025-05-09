@@ -91,25 +91,25 @@ const Layout = ({ children, pageTitle }) => {
       <main className="main-content" style={{ position: 'relative' }}>
         {/* Encabezado de página con título y notificaciones */}
         <div
-          className="page-top-bar flex items-center border-b border-purple-500 p-4"
-          style={{ position: 'relative' }}
+          className="page-top-bar border-b border-purple-500 p-4"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: pageTitle === "Notificaciones" ? 'flex-start' : 'space-between'
+          }}
         >
           <h2 className="section-title" style={{ margin: 0 }}>
             {pageTitle}
           </h2>
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              right: '20px',
-              transform: 'translateY(-50%)'
-            }}
-          >
-            <Link to="/notificaciones" style={{ fontSize: '1.5rem', color: '#7e22ce' }}>
-              <FontAwesomeIcon icon={faBell} />
-            </Link>
-          </div>
+          <Link to="/notificaciones" style={{ color: '#7e22ce' }}>
+            <FontAwesomeIcon icon={faBell} style={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />
+          </Link>
+
         </div>
+        {/* Línea horizontal morada para Notificaciones */}
+        {pageTitle === "Notificaciones" && (
+          <div style={{ backgroundColor: '#7e22ce', height: '1px', width: '100vw' }}></div>
+        )}
         {children}
       </main>
     </div>
