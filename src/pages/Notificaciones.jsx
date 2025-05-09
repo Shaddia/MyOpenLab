@@ -30,6 +30,7 @@ const Notificaciones = () => {
       snapshot.forEach((doc) => {
         notis.push({ id: doc.id, ...doc.data() });
       });
+      console.log("Notificaciones recibidas:", notis);
       setNotificaciones(notis);
       const count = notis.filter(n => !n.read).length;
       setUnreadCount(count);
@@ -52,6 +53,12 @@ const Notificaciones = () => {
               {notif.type === 'follow' && (
                 <p>
                   <strong>{notif.fromName}</strong> te ha seguido. 
+                  <small className="text-gray-500 ml-2">{formatDate(notif.createdAt)}</small>
+                </p>
+              )}
+              {notif.type === 'like' && (
+                <p>
+                  <strong>{notif.fromName}</strong> le dio me gusta a <strong>{notif.postName}</strong>. 
                   <small className="text-gray-500 ml-2">{formatDate(notif.createdAt)}</small>
                 </p>
               )}

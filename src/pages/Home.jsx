@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/home.css';
 import defaultAvatar from '../assets/default-avatar.png'; // Ajusta la ruta si es distinta
-
+import { createNotification } from '../services/notificaciones';
 import { useAuth } from '../context/useAuth';
 import { db } from '../services/firebase';
 import {
@@ -242,23 +242,38 @@ const Home = () => {
         setDeleteId(null);
     };
 
-    const toggleReaction = async (id, type, pubTipo) => {
-        if (user.isAnonymous) {
-            navigate('/login?register=true');
-            return;
-        }
-        const collectionName = pubTipo === 'evento' ? 'eventos' : 'proyectos';
-        const projectRef = doc(db, collectionName, id);
-        const projectSnap = await getDoc(projectRef);
-        if (!projectSnap.exists()) return;
-        const projectData = projectSnap.data();
-        const field = type === 'like' ? 'likes' : 'favorites';
-        const arr = projectData[field] || [];
-        const updatedArr = arr.includes(user.uid)
-            ? arr.filter(uid => uid !== user.uid)
-            : [...arr, user.uid];
-        await updateDoc(projectRef, { [field]: updatedArr });
-    };
+   // Dentro de Home.jsx, reemplaza o modifica toggleReaction:
+const toggleReaction = async (id, type, pubTipo) => {
+    if (user.isAnonymous) {
+        navigate('/login?register=true');
+        return;
+    }
+    const collectionName = pubTipo === 'evento' ? 'eventos' : 'proyectos';
+    const projectRef = doc(db, collectionName, id);
+    const projectSnap = await getDoc(projectRef);
+    if (!projectSnap.exists()) return;
+    const projectData = projectSnap.data();
+    const field = type === 'like' ? 'likes' : 'favorites';
+    const currentReactions = projectData[field] || [];
+    const alreadyReacted = currentReactions.includes(user.uid);
+    const updatedReactions = alreadyReacted
+        ? currentReactions.filter(uid => uid !== user.uid)
+        : [...currentReactions, user.uid];
+
+    await updateDoc(projectRef, { [field]: updatedReactions });
+
+    // Solo creamos la notificación si se añade la reacción y el autor no es quien reaccionó
+    if (!alreadyReacted && projectData.autorId !== user.uid) {
+        await createNotification({
+            type: 'like',
+            from: user.uid,
+            fromName: user.displayName,
+            to: projectData.autorId,
+            // Usa projectData.nombre o un fallback (por ejemplo: 'tu publicación')
+            postName: projectData.nombre || projectData.titulo || 'tu publicación'
+        });
+    }
+};
 
     const formatDate = (timestamp) => {
         if (!timestamp) return '';

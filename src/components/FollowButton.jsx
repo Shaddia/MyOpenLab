@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/useAuth';
 import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { createNotification } from '../services/notificaciones';
 
 const FollowButton = ({ targetUid }) => {
   const { user } = useAuth();
@@ -28,6 +29,13 @@ const FollowButton = ({ targetUid }) => {
           following: arrayUnion(targetUid)
         });
         setIsFollowing(true);
+        // Solo creamos la notificación si se empieza a seguir
+        await createNotification({
+          type: 'follow',
+          from: user.uid,
+          fromName: user.displayName,
+          to: targetUid
+        });
       } else {
         await updateDoc(userDocRef, {
           following: arrayRemove(targetUid)
