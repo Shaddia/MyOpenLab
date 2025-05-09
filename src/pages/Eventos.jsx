@@ -255,7 +255,7 @@ const Eventos = () => {
                                 )}
 
                                 {/* Botones Like y Favorito en la esquina derecha */}
-                                 <div className="post-action-bar flex justify-between items-center">
+                                 <div className="post-action-bar flex justify-between items-center"  style={{ borderTop: 'none', paddingTop: 0, marginTop: '-5px' }}>
                                 <div className="like-fav-buttons flex gap-4 items-center">
                                     <button
                                         className={`btn-like ${liked ? 'active' : ''}`}
