@@ -1,6 +1,6 @@
 // src/components/Layout.jsx
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/home.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,6 +14,7 @@ import {
   faRightFromBracket,
   faCalendar,
   faCalendarTimes,
+  faUserFriends, // Asegúrate de importar este icono
 } from '@fortawesome/free-solid-svg-icons';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -64,7 +65,9 @@ const Layout = ({ children }) => {
           <Link to="/home"><FontAwesomeIcon icon={faCompass} /> {texts.explorar}</Link>
           <Link to="/eventos"><FontAwesomeIcon icon={faCalendarTimes} /> {texts.eventos}</Link>
           <Link to="/perfil"><FontAwesomeIcon icon={faUser} /> {texts.miPerfil}</Link>
+          <Link to="/amigos"> <FontAwesomeIcon icon={faUserFriends} /> Amigos</Link>
           <Link to="/configuracion"><FontAwesomeIcon icon={faGear} /> {texts.configuracion}</Link>
+
 
           <hr className="divider" />
 
@@ -74,8 +77,8 @@ const Layout = ({ children }) => {
 
             <hr className="divider" />
 
-            <button 
-              onClick={handleLogout} 
+            <button
+              onClick={handleLogout}
               className="logout-button"
             >
               <FontAwesomeIcon icon={faRightFromBracket} /> {texts.cerrarSesion}

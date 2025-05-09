@@ -16,6 +16,7 @@ import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import Eventos from './pages/Eventos';
 import Configuración from './pages/Configuración';
+import Amigos from './pages/Amigos';
 
 
 function App() {
@@ -66,6 +67,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Configuración />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/amigos"
+              element={
+                <PrivateRoute>
+                  <Amigos />
                 </PrivateRoute>
               }
             />
