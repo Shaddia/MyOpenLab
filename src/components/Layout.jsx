@@ -14,7 +14,8 @@ import {
   faRightFromBracket,
   faCalendar,
   faCalendarTimes,
-  faUserFriends, // Asegúrate de importar este icono
+  faUserFriends,
+  faBell // Importa el icono de notificaciones
 } from '@fortawesome/free-solid-svg-icons';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -41,7 +42,7 @@ const layoutTranslations = {
   }
 };
 
-const Layout = ({ children }) => {
+const Layout = ({ children, pageTitle }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const texts = layoutTranslations[language];
@@ -87,7 +88,28 @@ const Layout = ({ children }) => {
         </nav>
       </aside>
 
-      <main className="main-content">
+      <main className="main-content" style={{ position: 'relative' }}>
+        {/* Encabezado de página con título y notificaciones */}
+        <div
+          className="page-top-bar flex items-center border-b border-purple-500 p-4"
+          style={{ position: 'relative' }}
+        >
+          <h2 className="section-title" style={{ margin: 0 }}>
+            {pageTitle}
+          </h2>
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              right: '20px',
+              transform: 'translateY(-50%)'
+            }}
+          >
+            <Link to="/notificaciones" style={{ fontSize: '1.5rem', color: '#7e22ce' }}>
+              <FontAwesomeIcon icon={faBell} />
+            </Link>
+          </div>
+        </div>
         {children}
       </main>
     </div>
