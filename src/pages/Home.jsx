@@ -262,14 +262,13 @@ const toggleReaction = async (id, type, pubTipo) => {
 
     await updateDoc(projectRef, { [field]: updatedReactions });
 
-    // Solo creamos la notificación si se añade la reacción y el autor no es quien reaccionó
+    // Crea la notificación solo cuando se añade la reacción y el autor no es quien reacciona
     if (!alreadyReacted && projectData.autorId !== user.uid) {
         await createNotification({
-            type: 'like',
+            type: type, // Usa el valor recibido: "like" o "favorite"
             from: user.uid,
             fromName: user.displayName,
             to: projectData.autorId,
-            // Usa projectData.nombre o un fallback (por ejemplo: 'tu publicación')
             postName: projectData.nombre || projectData.titulo || 'tu publicación'
         });
     }

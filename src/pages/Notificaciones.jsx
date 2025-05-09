@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/useAuth';
+import { FaUserPlus, FaHeart, FaStar } from 'react-icons/fa';
 
-// Función para formatear fecha
 const formatDate = (timestamp) => {
   if (!timestamp) return '';
   if (timestamp.seconds) {
@@ -16,7 +16,6 @@ const formatDate = (timestamp) => {
 const Notificaciones = () => {
   const { user } = useAuth();
   const [notificaciones, setNotificaciones] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -27,51 +26,96 @@ const Notificaciones = () => {
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notis = [];
-      snapshot.forEach((doc) => {
-        notis.push({ id: doc.id, ...doc.data() });
+      snapshot.forEach((docSnap) => {
+        notis.push({ id: docSnap.id, ...docSnap.data() });
       });
       console.log("Notificaciones recibidas:", notis);
       setNotificaciones(notis);
-      const count = notis.filter(n => !n.read).length;
-      setUnreadCount(count);
     });
     return () => unsubscribe();
   }, [user]);
 
+  // Efecto para marcar como leídas las notificaciones mostradas
+  useEffect(() => {
+    if (notificaciones.length > 0) {
+      notificaciones.forEach((notif) => {
+        if (!notif.read) {
+          updateDoc(doc(db, 'notificaciones', notif.id), { read: true })
+            .catch(console.error);
+        }
+      });
+    }
+  }, [notificaciones]);
+
   return (
     <Layout>
-            <div className="top-bar">
-                <h2 className="section-title">NOTIFICACIONES</h2>
-                <div className="underline" />
-            </div> 
+      <div className="top-bar">
+        <h2 className="section-title">NOTIFICACIONES</h2>
+        <div className="underline" />
+      </div> 
+      {notificaciones.length === 0 ? (
+        <p>No tienes nuevas notificaciones.</p>
+      ) : (
+        notificaciones.map((notif) => {
+          let icon;
+          if (notif.type === 'follow') {
+            icon = <FaUserPlus style={{ marginRight: '0.5rem', color: '#7e22ce' }} />;
+          } else if (notif.type === 'like') { 
+            icon = <FaHeart style={{ marginRight: '0.5rem', color: '#ff0000' }} />;
+          } else if (notif.type === 'favorite') {
+            icon = <FaStar style={{ marginRight: '0.5rem', color: '#f39c12' }} />;
+          } else if (notif.type === 'post') {
+            icon = <FaStar style={{ marginRight: '0.5rem', color: '#7e22ce' }} />;
+          }
 
-        {notificaciones.length === 0 ? (
-          <p>No tienes nuevas notificaciones.</p>
-        ) : (
-          notificaciones.map((notif) => (
-            <div key={notif.id} className="notification-item border-b py-2">
-              {notif.type === 'follow' && (
-                <p>
-                  <strong>{notif.fromName}</strong> te ha seguido. 
-                  <small className="text-gray-500 ml-2">{formatDate(notif.createdAt)}</small>
-                </p>
-              )}
-              {notif.type === 'like' && (
-                <p>
-                  <strong>{notif.fromName}</strong> le dio me gusta a <strong>{notif.postName}</strong>. 
-                  <small className="text-gray-500 ml-2">{formatDate(notif.createdAt)}</small>
-                </p>
-              )}
-              {notif.type === 'post' && (
-                <p>
-                  <strong>{notif.fromName}</strong> ha publicado un nuevo post. 
-                  <small className="text-gray-500 ml-2">{formatDate(notif.createdAt)}</small>
-                </p>
-              )}
+          return (
+            <div 
+              key={notif.id} 
+              style={{
+                backgroundColor: '#f3e8ff',
+                border: '1px solid #7e22ce',
+                borderRadius: '8px',
+                padding: '0.75rem',
+                marginBottom: '0.5rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              {icon}
+              <div style={{ flex: 1 }}>
+                {notif.type === 'follow' && (
+                  <p style={{ margin: 0 }}>
+                    <strong>{notif.fromName}</strong> te ha seguido.
+                    <br />
+                    <small style={{ color: '#666' }}>{formatDate(notif.createdAt)}</small>
+                  </p>
+                )}
+                {notif.type === 'like' && (
+                  <p style={{ margin: 0 }}>
+                    <strong>{notif.fromName}</strong> le dio me gusta a tu post <strong>{notif.postName}</strong>.
+                    <br />
+                    <small style={{ color: '#666' }}>{formatDate(notif.createdAt)}</small>
+                  </p>
+                )}
+                {notif.type === 'favorite' && (
+                  <p style={{ margin: 0 }}>
+                    <strong>{notif.fromName}</strong> ha añadido a sus favoritos tu post <strong>{notif.postName}</strong>.
+                    <br />
+                    <small style={{ color: '#666' }}>{formatDate(notif.createdAt)}</small>
+                  </p>
+                )}
+                {notif.type === 'post' && (
+                  <p style={{ margin: 0 }}>
+                    <strong>{notif.fromName}</strong> ha publicado un nuevo post.
+                    <br />
+                    <small style={{ color: '#666' }}>{formatDate(notif.createdAt)}</small>
+                  </p>
+                )}
+              </div>
             </div>
-          ))
-        )}
-      
+          );
+        })
+      )}
     </Layout>
   );
 };
