@@ -59,13 +59,13 @@ const Notificaciones = () => {
         notificaciones.map((notif) => {
           let icon;
           if (notif.type === 'follow') {
-            icon = <FaUserPlus style={{ marginRight: '0.5rem', color: '#7e22ce' }} />;
+            icon = <FaUserPlus style={{ marginRight: '1rem', color: '#7e22ce' }} />;
           } else if (notif.type === 'like') { 
-            icon = <FaHeart style={{ marginRight: '0.5rem', color: '#ff0000' }} />;
+            icon = <FaHeart style={{ marginRight: '1rem', color: '#ff0000' }} />;
           } else if (notif.type === 'favorite') {
-            icon = <FaStar style={{ marginRight: '0.5rem', color: '#f39c12' }} />;
+            icon = <FaStar style={{ marginRight: '1rem', color: '#f39c12' }} />;
           } else if (notif.type === 'post') {
-            icon = <FaStar style={{ marginRight: '0.5rem', color: '#7e22ce' }} />;
+            icon = <FaStar style={{ marginRight: '1rem', color: '#7e22ce' }} />;
           }
 
           return (
