@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/home.css';
+import '../styles/dark-mode.css'; // Asegúrate de importar tus estilos de dark mode
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faHouse,
@@ -31,7 +32,9 @@ const layoutTranslations = {
     configuracion: "Configuración",
     meGusta: "Me gusta",
     favoritos: "Favoritos",
-    cerrarSesion: "Cerrar sesión"
+    cerrarSesion: "Cerrar sesión",
+    darkModeOn: "Modo Oscuro",
+    darkModeOff: "Modo Claro"
   },
   en: {
     logo: "MyOpenLab",
@@ -41,18 +44,40 @@ const layoutTranslations = {
     configuracion: "Settings",
     meGusta: "Likes",
     favoritos: "Favorites",
-    cerrarSesion: "Logout"
+    cerrarSesion: "Logout",
+    darkModeOn: "Dark Mode",
+    darkModeOff: "Light Mode"
   }
 };
 
 const Layout = ({ children, pageTitle }) => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const texts = layoutTranslations[language];
   const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  
+  // Inicializa darkMode leyendo de localStorage (si no existe, false)
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem("darkMode");
+    return savedMode ? JSON.parse(savedMode) : false;
+  });
 
-  // Consulta para actualizar el contador en tiempo real
+  // Cada vez que darkMode cambie, actualiza la clase en body y localStorage
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+    localStorage.setItem("darkMode", JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(prev => !prev);
+  };
+
   useEffect(() => {
     if (!user) return;
     const q = query(
@@ -120,27 +145,33 @@ const Layout = ({ children, pageTitle }) => {
           <h2 className="section-title" style={{ margin: 0 }}>
             {pageTitle}
           </h2>
-          {pageTitle !== "Notificaciones" && (
-            <Link to="/notificaciones" style={{ color: '#7e22ce', position: 'relative' }}>
-              <FontAwesomeIcon icon={faBell} style={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />
-              {unreadCount > 0 && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: '-5px',
-                    right: '-10px',
-                    background: '#ff0000',
-                    color: '#fff',
-                    borderRadius: '50%',
-                    padding: '0 6px',
-                    fontSize: '0.7rem'
-                  }}
-                >
-                  {unreadCount}
-                </span>
-              )}
-            </Link>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {pageTitle !== "Notificaciones" && (
+              <Link to="/notificaciones" style={{ color: '#7e22ce', position: 'relative', marginRight: '1rem' }}>
+                <FontAwesomeIcon icon={faBell} style={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />
+                {unreadCount > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '-5px',
+                      right: '-10px',
+                      background: '#ff0000',
+                      color: '#fff',
+                      borderRadius: '50%',
+                      padding: '0 6px',
+                      fontSize: '0.7rem'
+                    }}
+                  >
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
+            {/* Botón de cambio de tema */}
+            <button onClick={toggleDarkMode} style={{ marginRight: '1rem', padding: '0.4rem 0.8rem', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+              {darkMode ? texts.darkModeOff : texts.darkModeOn}
+            </button>
+          </div>
         </div>
         {/* Línea horizontal morada para Notificaciones */}
         {pageTitle === "Notificaciones" && (

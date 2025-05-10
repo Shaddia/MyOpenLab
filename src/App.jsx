@@ -3,22 +3,17 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
-// Páginas que ya tienes
 import Login from './pages/Login';
 import MiPerfil from './pages/Miperfil';
 import Home from './pages/Home';
 import Favoritos from './pages/Favoritos';
 import MeGusta from './pages/MeGusta';
-// Importar el PrivateRoute que protegerá las rutas privadas
 import PrivateRoute from './components/PrivateRoute';
-
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
+import './styles/dark-mode.css';
 import Eventos from './pages/Eventos';
 import Configuración from './pages/Configuración';
 import Amigos from './pages/Amigos';
 import Notificaciones from './pages/Notificaciones';
-
 
 function App() {
   const [count, setCount] = useState(0);
@@ -27,15 +22,11 @@ function App() {
     <LanguageProvider>
       <AuthProvider>
         <BrowserRouter>
-
-          {/* Configuración de las rutas */}
           <Routes>
-            {/* Rutas públicas */}
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/eventos" element={<Eventos />} />
             <Route path="/home" element={<Home />} />
-            {/* Ruta privada, solo accesible si el usuario está logueado */}
             <Route
               path="/favoritos"
               element={
@@ -44,7 +35,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            {/* Ruta privada, solo accesible si el usuario está logueado */}
             <Route
               path="/megusta"
               element={
@@ -53,7 +43,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            {/* Ruta privada, solo accesible si el usuario está logueado */}
             <Route
               path="/perfil"
               element={
@@ -62,7 +51,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            {/* Ruta privada, solo accesible si el usuario está logueado */}
             <Route
               path="/configuracion"
               element={
@@ -87,7 +75,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            {/* En caso de rutas no definidas, redirige a login */}
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
         </BrowserRouter>

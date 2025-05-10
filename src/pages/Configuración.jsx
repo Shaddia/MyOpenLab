@@ -17,7 +17,8 @@ const translations = {
     password: "Contraseña:",
     language: "Idioma:",
     changePassword: "Cambiar Contraseña",
-    deleteAccount: "Eliminar Cuenta"
+    deleteAccount: "Eliminar Cuenta",
+    toggleDark: "Cambiar a Dark Mode"
   },
   en: {
     accountSettings: "Account Settings",
@@ -25,7 +26,8 @@ const translations = {
     password: "Password:",
     language: "Language:",
     changePassword: "Change Password",
-    deleteAccount: "Delete Account"
+    deleteAccount: "Delete Account",
+    toggleDark: "Switch to Dark Mode"
   }
 };
 
@@ -34,9 +36,31 @@ const Configuración = () => {
   const navigate = useNavigate();
   const auth = getAuth();
   const { language, setLanguage } = useLanguage();
-
-  // Estado para controlar qué panel se muestra: 'datos', 'escritorio' o 'notificaciones'
+  
+  // Estado local para paneles y dark mode
   const [selectedPanel, setSelectedPanel] = useState('datos');
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Al hacer toggle, actualizamos el estado
+  const handleDarkMode = () => {
+    setDarkMode(prev => !prev);
+  };
+
+  // Estilos que se aplicarán según el valor de darkMode
+  const containerStyle = {
+    backgroundColor: darkMode ? darkModeColors.background : "#fff",
+    color: darkMode ? darkModeColors.text : "#000"
+  };
+
+  // Ejemplo: actualizar estilos para botones (puedes extenderlo al resto de componentes)
+  const buttonStyle = {
+    padding: '0.5rem 1rem',
+    backgroundColor: darkMode ? darkModeColors.button.background : '#444',
+    color: darkMode ? darkModeColors.button.text : 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer'
+  };
 
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
@@ -115,48 +139,26 @@ const Configuración = () => {
     setLanguage(e.target.value);
   };
 
-  const handleDarkMode = () => {
-    alert(language === 'es' ? "Dark Mode activado" : "Dark Mode activated");
-  };
-
   return (
     <Layout>
-      <div
-        style={{
-          display: 'flex',
-          padding: '2rem',
-          maxWidth: '100%',
-          margin: '0 auto',
-          position: 'relative'
-        }}
-      >
+      <div style={{ ...containerStyle, display: 'flex', padding: '2rem', maxWidth: '100%', margin: '0 auto', position: 'relative' }}>
         {/* Contenedor principal para el contenido de configuración */}
-        <div
-          style={{
-            flex: '1',
-            marginRight: '370px', // Reserva el espacio del menú lateral fijo (350px + 20px de espacio extra)
-            display: 'flex',
-            justifyContent: 'center'
-          }}
-        >
-          <div style={{
-            width: '100%',
-            maxWidth: '600px'
-          }}>
+        <div style={{ flex: '1', marginRight: '370px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ width: '100%', maxWidth: '600px' }}>
             {selectedPanel === 'datos' && (
               <>
                 <h2 style={{ marginBottom: '1rem', textAlign: 'center' }}>
                   {translations[language].accountSettings}
                 </h2>
                 <div style={{
-                  border: '1px solid #ddd',
+                  border: darkMode ? `1px solid ${darkModeColors.border}` : '1px solid #ddd',
                   borderRadius: '8px',
                   padding: '1.5rem',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  backgroundColor: '#fff'
+                  backgroundColor: darkMode ? darkModeColors.sidebar.background : '#fff'
                 }}>
                   {/* Contenido de configuración de cuenta */}
-                  <p style={{ marginBottom: '1.5rem', color: '#333' }}
+                  <p style={{ marginBottom: '1.5rem', color: darkMode ? darkModeColors.text : '#333' }}
                     dangerouslySetInnerHTML={{ __html: translations[language].accountWarning }}>
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
@@ -189,16 +191,7 @@ const Configuración = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
                     <button
                       onClick={handleDeleteAccount}
-                      style={{
-                        backgroundColor: '#8a2be2',
-                        color: 'white',
-                        padding: '0.5rem 1rem',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        marginBottom: '1rem',
-                        flex: '1 0 45%'
-                      }}
+                      style={buttonStyle}
                     >
                       {translations[language].deleteAccount}
                     </button>
@@ -210,16 +203,9 @@ const Configuración = () => {
               <div style={{ textAlign: 'center', padding: '2rem' }}>
                 <button
                   onClick={handleDarkMode}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: '#444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
+                  style={buttonStyle}
                 >
-                  {language === 'es' ? "Cambiar a Dark Mode" : "Switch to Dark Mode"}
+                  {translations[language].toggleDark}
                 </button>
               </div>
             )}
@@ -236,7 +222,7 @@ const Configuración = () => {
           position: 'fixed',
           top: 0,
           right: 0,
-          backgroundColor: '#1c2833',
+          backgroundColor: darkMode ? darkModeColors.sidebar.background : '#1c2833',
           width: '350px',
           minHeight: '100vh',
           padding: '1rem',
@@ -244,7 +230,8 @@ const Configuración = () => {
           display: 'flex',
           flexDirection: 'column',
           gap: '1rem',
-          zIndex: 1000
+          zIndex: 1000,
+          color: darkMode ? darkModeColors.sidebar.text : '#fff'
         }}>
           {/* Opciones del menú lateral */}
           <div className="menu-option-container" onClick={() => setSelectedPanel('datos')}>

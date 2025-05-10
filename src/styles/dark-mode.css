@@ -1,0 +1,1274 @@
+/*dark-mode.css POR SECCIONES*/
+/* src/styles/detalle-proyecto-dark-mode.css */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
+
+.detalle-proyecto-container {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.proyecto-header {
+  margin-bottom: 30px;
+}
+
+.proyecto-titulo {
+  margin: 15px 0 10px 0;
+  font-size: 32px;
+  color: #f0f0f0;
+}
+
+.proyecto-autor {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  color: #b0b0b0;
+}
+
+.proyecto-fecha {
+  margin: 0;
+  font-size: 14px;
+  color: #8f8f8f;
+}
+
+.volver-btn {
+  display: inline-block;
+  text-decoration: none;
+  color: #64b5f6;
+  font-weight: 500;
+  margin-bottom: 10px;
+  transition: color 0.2s ease;
+}
+
+.volver-btn:hover {
+  color: #82c8ff;
+  text-decoration: underline;
+}
+
+.proyecto-contenido {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.placeholder-imagen-grande {
+  width: 100%;
+  height: 300px;
+  background-color: #2d2d2d;
+  background-image: linear-gradient(45deg, #333333 25%, transparent 25%, transparent 75%, #333333 75%),
+                    linear-gradient(45deg, #333333 25%, transparent 25%, transparent 75%, #333333 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.proyecto-img-grande {
+  width: 100%;
+  height: 300px;
+  object-fit: contain;
+  background-color: #252525;
+}
+
+.proyecto-descripcion {
+  padding: 25px;
+}
+
+.proyecto-descripcion h2 {
+  margin-top: 0;
+  font-size: 22px;
+  color: #e0e0e0;
+  margin-bottom: 15px;
+}
+
+.proyecto-descripcion p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #c0c0c0;
+}
+
+/* Estilos para categorías y etiquetas */
+.proyecto-categoria,
+.proyecto-tags {
+  padding: 0 25px 25px;
+}
+
+.proyecto-categoria h3,
+.proyecto-tags h3 {
+  margin-top: 0;
+  font-size: 18px;
+  color: #e0e0e0;
+  margin-bottom: 10px;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #1a3a54;
+  color: #64b5f6;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 0;
+  font-size: 18px;
+  color: #b0b0b0;
+}
+
+.error-message {
+  text-align: center;
+  padding: 40px;
+  color: #ff5252;
+  background-color: #3d2222;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* src/styles/explorar-dark-mode.css */
+
+.explorar-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.explorar-container h1 {
+  margin-bottom: 20px;
+  font-size: 28px;
+  color: #f0f0f0;
+}
+
+.proyectos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.proyecto-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.proyecto-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.placeholder-imagen {
+  width: 100%;
+  height: 160px;
+  background-color: #2d2d2d;
+  background-image: linear-gradient(45deg, #333333 25%, transparent 25%, transparent 75%, #333333 75%),
+                    linear-gradient(45deg, #333333 25%, transparent 25%, transparent 75%, #333333 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.proyecto-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.proyecto-info {
+  padding: 15px;
+}
+
+.proyecto-titulo {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #e0e0e0;
+}
+
+.proyecto-autor {
+  margin: 0;
+  font-size: 14px;
+  color: #b0b0b0;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #b0b0b0;
+}
+
+.error-message {
+  text-align: center;
+  padding: 40px;
+  color: #ff5252;
+  background-color: #3d2222;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* src/styles/home-dark.css */
+
+:root {
+    /* Light mode variables */
+    --bg-primary: white;
+    --bg-sidebar: #3e1466;
+    --bg-card: #fdfdfd;
+    --text-primary: #333;
+    --text-secondary: #777;
+    --text-sidebar: white;
+    --accent-color: #8a2be2;
+    --accent-hover: #6a1bbd;
+    --border-color: #eee;
+    --shadow-color: rgba(0, 0, 0, 0.06);
+    --card-shadow: 0 0 10px rgba(0, 0, 0, 0.06);
+    --author-color: #531a89;
+    --content-color: #444;
+    --favorite-color: #ffa500;
+    --favorite-hover: #fff4e0;
+    --delete-color: #ff0000;
+    --delete-hover: #ffebeb;
+    --modal-overlay: rgba(0, 0, 0, 0.4);
+    --badge-bg: #6a0dad;
+    --badge-text: #e0e0e0;
+    --btn-bg: #e6f0f8;
+}
+.dark-mode {
+    /* Dark mode variables */
+    --bg-primary: #121212;
+    --bg-sidebar: #2a0d47;
+    --bg-card: #1e1e1e;
+    --text-primary: #e0e0e0;
+    --text-secondary: #aaaaaa;
+    --text-sidebar: #f0f0f0;
+    --accent-color: #9d4edd;
+    --accent-hover: #8031ce;
+    --border-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.2);
+    --card-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    --author-color: #bb86fc;
+    --content-color: #cccccc;
+    --favorite-color: #ffb700;
+    --favorite-hover: #332300;
+    --delete-color: #ff6b6b;
+    --delete-hover: #330000;
+    --modal-overlay: rgba(0, 0, 0, 0.7);
+    --badge-bg: #9d4edd;
+    --badge-text: #ffffff;
+    --btn-bg: #2a2a2a;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'DM Serif Display', serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.home-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* Theme Toggle Switch */
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.theme-toggle input[type="checkbox"] {
+    height: 0;
+    width: 0;
+    visibility: hidden;
+}
+
+.theme-toggle label {
+    cursor: pointer;
+    width: 60px;
+    height: 30px;
+    background: var(--accent-color);
+    display: block;
+    border-radius: 30px;
+    position: relative;
+}
+
+.theme-toggle label:after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.theme-toggle input:checked + label:after {
+    left: calc(100% - 5px);
+    transform: translateX(-100%);
+}
+
+.theme-toggle input:checked + label {
+    background: var(--accent-color);
+}
+
+.theme-toggle label::before {
+    content: '☀️';
+    position: absolute;
+    right: 10px;
+    top: 5px;
+}
+
+.theme-toggle input:checked + label::before {
+    content: '🌙';
+    left: 10px;
+    right: auto;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: var(--bg-sidebar);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s ease;
+}
+
+.logo-box {
+    font-family: 'DM Serif Display', serif;
+    font-size: 30px;
+    color: var(--bg-sidebar); 
+    background-color: var(--bg-primary);
+    padding: 20px 30px;
+    border-radius: 8px;
+    margin: 0 0 30px -10px;
+    display: inline-block;
+    box-shadow: 0 4px 10px var(--shadow-color);
+    letter-spacing: 1px;
+    line-height: 1.2;
+    text-shadow:
+      0.5px 0 var(--text-primary),
+      -0.5px 0 var(--text-primary),
+      0 0.5px var(--text-primary),
+      0 -0.5px var(--text-primary);
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.nav-links a, .nav-links p {
+    display: block;
+    color: var(--text-sidebar);
+    margin-bottom: 12px;
+    font-size: 16px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover,
+.account-section a:hover {
+    color: var(--text-sidebar);
+    opacity: 0.8;
+}
+
+.sidebar-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--text-sidebar);
+    margin-left: 1px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    transition: color 0.3s ease;
+}
+
+.divider {
+    border: none;
+    height: 1px;
+    background-color: var(--text-sidebar);
+    margin: 20px 0;
+    opacity: 0.3;
+    transition: background-color 0.3s ease;
+}
+
+/* Main content */
+.main-content {
+    flex-grow: 1;
+    padding: 30px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-y: auto;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Barra superior */
+.top-bar {
+    background-color: var(--bg-primary);
+    padding: 5px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    border-bottom: 2px solid var(--accent-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.section-title {
+    font-size: 15px !important;
+    font-weight: 550;
+    color: var(--accent-color);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+.post-creator h3 {
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.post-creator textarea {
+    width: 90%;
+    height: 80px;
+    padding: 10px;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px var(--shadow-color);
+    border: 1px solid var(--border-color);
+    margin-top: 20px;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.post-creator button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 5px;
+    margin-left: 87%;
+    display: block;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.post-creator button:hover {
+    background-color: var(--accent-hover);
+}
+
+/* Post cards */
+.posts h3 {
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.post-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--modal-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+.modal {
+    background: var(--bg-primary);
+    padding: 2rem;
+    border-radius: 10px;
+    width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.error {
+    color: var(--delete-color);
+    font-size: 0.85rem;
+    transition: color 0.3s ease;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.modal-actions .cancel {
+    background: #ccc;
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.modal-actions button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-actions button:hover {
+    background-color: var(--accent-hover);
+}
+
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--modal-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    transition: background-color 0.3s ease;
+}
+  
+.popup-inner {
+    background: var(--bg-primary);
+    padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+  
+.popup-inner input,
+.popup-inner textarea {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+  
+.info-badge {
+    background-color: var(--badge-bg);
+    color: var(--badge-text);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-top: 0.5rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+  
+.author-info {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+    text-align: left;
+    transition: color 0.3s ease;
+}
+  
+/* Estilo mejorado para el encabezado del post */
+.post-header {
+    display: flex;
+    align-items: center;
+}
+  
+.author-photo img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 0.8rem;
+}
+  
+.author-details h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--author-color);
+    transition: color 0.3s ease;
+}
+  
+.author-details .post-date {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+  
+/* Contenido del post */
+.post-content p {
+    margin: 8px 0;
+    color: var(--content-color);
+    line-height: 1.5;
+    transition: color 0.3s ease;
+}
+  
+/* Acciones del post */
+.post-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.8rem;
+    justify-content: flex-start;
+}
+  
+.post-actions button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease-in-out;
+}
+  
+.post-actions button:first-child {
+    background-color: var(--btn-bg);
+    color: var(--accent-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+  
+.btn-delete {
+    background-color: var(--accent-color);
+    color: white;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+}
+  
+/* Botones de reacciones */
+.reaction-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.reaction-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.reaction-btn span {
+    font-size: 14px;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.reaction-btn:hover {
+    opacity: 0.8;
+}
+
+/* Nueva barra inferior para botones de reacciones */
+.post-action-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-right: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.5rem;
+    transition: border-color 0.3s ease;
+}
+
+/* Botón de Me gusta */
+.btn-like {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent-color);
+    background-color: transparent;
+    border: 1px solid var(--accent-color);
+    border-radius: 20px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out, color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-like:hover {
+    background-color: rgba(157, 78, 221, 0.1);
+}
+
+/* Botón de Favorito */
+.btn-fav {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--favorite-color);
+    background-color: transparent;
+    border: 1px solid var(--favorite-color);
+    border-radius: 20px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out, color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-fav:hover {
+    background-color: rgba(255, 183, 0, 0.1);
+}
+
+/* Estado activado */
+.btn-like.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.btn-fav.active {
+    background-color: var(--favorite-color);
+    color: white;
+}
+
+/* Contenedor de botones editar y eliminar */
+.edit-delete-buttons {
+    display: flex;
+    gap: 10px;
+    margin-right: auto;
+}
+
+/* Botón de Editar */
+.edit-delete-buttons button {
+    color: var(--accent-color);
+    background-color: transparent;
+    border: 1px solid var(--accent-color);
+    border-radius: 20px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Botón de Eliminar */
+.edit-delete-buttons button.text-red-600 {
+    color: var(--delete-color);
+    border-color: var(--delete-color);
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.edit-delete-buttons button:hover {
+    background-color: rgba(157, 78, 221, 0.1);
+}
+
+/* Eliminar con color morado al pasar el mouse */
+.edit-delete-buttons button:hover.text-red-600 {
+    background-color: rgba(255, 107, 107, 0.1);
+}
+
+.post-header .post-date {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-weight: normal;
+    transition: color 0.3s ease;
+}
+
+/* Add these styles to your home.css file */
+.logout-button {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: var(--text-sidebar);
+    font: inherit;
+    padding: 8px 16px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.logout-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.logout-button svg {
+    margin-right: 8px;
+}
+
+.archivo-preview {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.archivo-img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 10px;
+    object-fit: contain;
+}
+
+.archivo-video {
+    width: 100%;
+    max-height: 400px;
+    border-radius: 10px;
+}
+
+.archivo-link {
+    color: var(--accent-color);
+    text-decoration: underline;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+/* Estilos de los posts en la sección de Favoritos */
+.favoritos-post-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Post content similar to the 'explore' section */
+.favoritos-post-header {
+    display: flex;
+    align-items: center;
+}
+
+.favoritos-author-photo img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 0.8rem;
+}
+
+.favoritos-author-details h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--author-color);
+    transition: color 0.3s ease;
+}
+
+.favoritos-author-details .post-date {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+/* Contenido del post */
+.favoritos-post-content p {
+    margin: 8px 0;
+    color: var(--content-color);
+    line-height: 1.5;
+    transition: color 0.3s ease;
+}
+
+/* Acción de Me gusta y Favorito */
+.favoritos-post-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* Botones de Reacción */
+.favoritos-reaction-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* Estilos para botones de Me gusta y Favorito */
+.favoritos-btn-like, .favoritos-btn-fav {
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+}
+
+.favoritos-btn-like {
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.favoritos-btn-fav {
+    color: var(--favorite-color);
+    border: 1px solid var(--favorite-color);
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Estado activado para Me gusta y Favorito */
+.favoritos-btn-like.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.favoritos-btn-fav.active {
+    background-color: var(--favorite-color);
+    color: white;
+}
+
+.like-fav-buttons .btn-like {
+    margin-right: 8px;
+}
+
+/* Post de "Me gusta" */
+.post-card.liked {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
+    border-left: 5px solid var(--accent-color);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Contenido del post con "Me gusta" */
+.post-card.liked .post-content p {
+    color: var(--content-color);
+    transition: color 0.3s ease;
+}
+
+/* Encabezado del post con "Me gusta" */
+.post-card.liked .post-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.post-card.liked .author-photo img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.post-card.liked .author-details h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--author-color);
+    transition: color 0.3s ease;
+}
+
+/* Fecha de publicación con "Me gusta" */
+.post-card.liked .author-details .post-date {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.menu-option {
+    font-size: 1.3rem;
+    color: var(--text-sidebar);
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s, color 0.3s ease;
+}
+
+.menu-option:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+.menu-option-container {
+    padding: 10px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.menu-option-container:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.03);
+    cursor: pointer;
+}
+
+.profile-container {
+    background-color: var(--bg-sidebar) !important;
+    transition: background-color 0.3s ease;
+}
+
+.main-profile-info {
+    color: var(--text-sidebar);
+    transition: color 0.3s ease;
+}
+
+/* login-dark-mode.css */
+
+/* Normaliza el tamaño de caja para evitar scrolls y desbordes */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden; /* Elimina scroll innecesario */
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+/* Contenedor principal */
+.login-page {
+  display: flex;
+  height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
+  width: 100vw; /* Asegura que ocupe todo el ancho de la ventana */
+  margin: 0; /* Elimina márgenes */
+  padding: 0; /* Elimina padding */
+  overflow: hidden; /* Evita scrolls innecesarios */
+}
+
+/* Lado izquierdo (con imagen de fondo) */
+.login-left {
+  position: relative; /* Necesario para posicionar elementos dentro del contenedor */
+  width: 40%; /* Ocupa el 40% del ancho de la pantalla */
+  height: 100%; /* Ocupa toda la altura del contenedor principal */
+  background-image: url('../assets/miopenlab-background.jpg'); /* Ruta de la imagen */
+  background-size: cover; /* Asegura que la imagen cubra todo el contenedor */
+  background-position: center; /* Centra la imagen */
+  background-repeat: no-repeat; /* Evita que la imagen se repita */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Evita que el contenido se desborde */
+  z-index: 0; /* Envía la imagen al fondo */
+  /* Añadir un filtro de oscurecimiento para la imagen de fondo */
+  position: relative;
+}
+
+/* Overlay oscuro para la imagen de fondo */
+.login-left::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Capa semi-transparente oscura */
+  z-index: 1;
+}
+
+/* Lado derecho (formulario) */
+.login-right {
+  width: 60%; /* Ocupa el 60% de la pantalla */
+  display: flex;
+  align-items: stretch; /* Asegura que el formulario ocupe toda la altura */
+  justify-content: center;
+  background-color: #1e1e1e;
+}
+
+/* Contenedor del formulario */
+.login-container {
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  max-width: none; /* Elimina cualquier restricción de ancho máximo */
+  height: 100%; /* Asegura que ocupe toda la altura disponible */
+  background-color: #252525;
+  padding: 2.5rem 2rem;
+  border-radius: 10px;
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Título y texto */
+.login-container h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #f0f0f0;
+}
+
+.login-container p {
+  margin-bottom: 1.5rem;
+  color: #c0c0c0;
+  font-size: 1rem;
+}
+
+/* Etiquetas para los campos */
+.login-container label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #b0b0b0;
+  margin-bottom: 0.5rem;
+}
+
+/* Espaciado entre grupos de campos */
+.login-container .form-group {
+  margin-bottom: 1.5rem;
+}
+
+/* Campos de entrada con bordes redondeados */
+.login-container input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  border: none;
+  border-bottom: 2px solid #444;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 4px; /* Bordes redondeados */
+  background-color: #333; /* Fondo oscuro */
+  color: #e0e0e0;
+}
+
+/* Efecto al enfocar */
+.login-container input:focus {
+  border-bottom: 2px solid #9c4dff;
+  box-shadow: 0 0 5px rgba(156, 77, 255, 0.5); /* Sombra morada */
+  background-color: #3a3a3a; /* Fondo un poco más claro al enfocar */
+}
+
+/* Botón de iniciar sesión */
+.login-container button[type="submit"] {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  background-color: #9c4dff; /* Morado más claro para mejor contraste */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-container button[type="submit"]:hover {
+  background-color: #aa6aff; /* Morado más brillante al pasar el mouse */
+}
+
+/* Botón de Google */
+.google-btn {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 14px;
+  font-size: 1rem;
+  border: 2px solid #9c4dff; /* Morado más claro */
+  color: #9c4dff;
+  background-color: #252525;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.google-btn:hover {
+  background-color: #3a2a4d; /* Fondo morado oscuro al pasar el mouse */
+}
+
+.google-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+/* Imagen de fondo */
+.login-left-image {
+  position: absolute; /* Posiciona la imagen dentro del contenedor */
+  top: 0;
+  left: 0;
+  width: 100%; /* La imagen ocupa todo el ancho del contenedor */
+  height: 100%; /* La imagen ocupa toda la altura del contenedor */
+  object-fit: cover; /* Asegura que la imagen se ajuste sin deformarse */
+  z-index: 1; /* Envía la imagen al fondo */
+}
+
+/* Enlace de registro */
+.register-link {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #b0b0b0;
+}
+
+.register-link a {
+  color: #aa6aff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* Texto encima de la imagen */
+.login-left-overlay {
+  position: relative; /* Asegura que el texto esté encima del fondo */
+  z-index: 2; /* Coloca el texto por encima del overlay oscuro */
+  font-size: 3rem; /* Ajusta el tamaño del texto */
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Agrega sombra para mayor visibilidad */
+}
