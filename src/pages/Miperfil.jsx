@@ -373,9 +373,9 @@ const MiPerfil = () => {
         </div>
 
         <div
+          className="cards-container"
           style={{
             flex: 1,
-            backgroundColor: '#fff',
             borderRadius: '10px',
             padding: '2rem',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',

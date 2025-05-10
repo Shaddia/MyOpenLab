@@ -168,8 +168,11 @@ const Layout = ({ children, pageTitle }) => {
               </Link>
             )}
             {/* Botón de cambio de tema */}
-            <button onClick={toggleDarkMode} style={{ marginRight: '1rem', padding: '0.4rem 0.8rem', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
-              {darkMode ? texts.darkModeOff : texts.darkModeOn}
+            <button 
+              onClick={toggleDarkMode} 
+              style={{ marginRight: '1rem', padding: '0.4rem 0.8rem', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+            >
+              {darkMode ? '🌕' : '🌛'}
             </button>
           </div>
         </div>

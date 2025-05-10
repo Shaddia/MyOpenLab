@@ -71,7 +71,7 @@ const Notificaciones = () => {
           return (
             <div 
               key={notif.id} 
-              style={{
+              className="notification-container" style={{
                 backgroundColor: '#f3e8ff',
                 border: '1px solid #7e22ce',
                 borderRadius: '11px',

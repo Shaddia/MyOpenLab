@@ -230,7 +230,7 @@
     --text-primary: #333;
     --text-secondary: #777;
     --text-sidebar: white;
-    --accent-color: #8a2be2;
+    --accent-color: #6a1bbd;
     --accent-hover: #6a1bbd;
     --border-color: #eee;
     --shadow-color: rgba(0, 0, 0, 0.06);
@@ -251,7 +251,7 @@
     --bg-primary: #121212;
     --bg-sidebar: #2a0d47;
     --bg-card: #1e1e1e;
-    --text-primary: #e0e0e0;
+    --text-primary: #e0e0e0;/*#e0e0e0*/
     --text-secondary: #aaaaaa;
     --text-sidebar: #f0f0f0;
     --accent-color: #9d4edd;
@@ -1271,4 +1271,39 @@ html, body {
   color: white;
   text-align: center;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Agrega sombra para mayor visibilidad */
+}
+
+/*Componentes que fallaron y toca remendar*/
+/* Estilos para el contenedor de tarjetas en modo oscuro */
+body.dark-mode .cards-container {
+  background-color: var(--bg-card) !important;
+  color: black !important;
+}
+
+body.dark-mode .notification-container {
+  background-color: #000000 !important;
+  border: '1px solid #7e22ce';
+  color: #ffffff !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .config-container {
+  background-color: #000000 !important;
+  color: gray !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Estilos para formularios en modo oscuro */
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select {
+  background-color: var(--bg-card); /* Usa el fondo de card definido */
+  color: var(--text-primary);        /* Color de texto principal */
+  border: 1px solid var(--border-color); /* Borde acorde al tema */
+  padding: 0.5rem;
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: var(--text-secondary); /* Color de placeholder algo más claro */
 }

@@ -141,7 +141,7 @@ const Configuración = () => {
 
   return (
     <Layout>
-      <div style={{ ...containerStyle, display: 'flex', padding: '2rem', maxWidth: '100%', margin: '0 auto', position: 'relative' }}>
+      <div className="config-container" style={{ display: 'flex', padding: '2rem', maxWidth: '100%', margin: '0 auto', position: 'relative' }}>
         {/* Contenedor principal para el contenido de configuración */}
         <div style={{ flex: '1', marginRight: '370px', display: 'flex', justifyContent: 'center' }}>
           <div style={{ width: '100%', maxWidth: '600px' }}>
@@ -188,10 +188,19 @@ const Configuración = () => {
                       <option value="en">English</option>
                     </select>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                  {/* Botón centrado para eliminar la cuenta */}
+                  <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                     <button
                       onClick={handleDeleteAccount}
-                      style={buttonStyle}
+                      style={{
+                        display: 'inline-block',
+                        padding: '0.5rem 1rem',
+                        backgroundColor: '#8a2be2',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
                     >
                       {translations[language].deleteAccount}
                     </button>
@@ -201,17 +210,12 @@ const Configuración = () => {
             )}
             {selectedPanel === 'escritorio' && (
               <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <button
-                  onClick={handleDarkMode}
-                  style={buttonStyle}
-                >
-                  {translations[language].toggleDark}
-                </button>
+                <p>¡Hola! pronto esta opción estará disponible.😉 </p>
               </div>
             )}
             {selectedPanel === 'notificaciones' && (
               <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>{language === 'es' ? "Contenido de Notificaciones" : "Notifications content"}</p>
+                <p>¡Hola! pronto esta opción estará disponible.😉</p>
               </div>
             )}
           </div>
