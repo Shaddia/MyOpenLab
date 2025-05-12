@@ -37,6 +37,7 @@ const Home = () => {
     const [deleteId, setDeleteId] = useState(null);
     const [protectedPopup, setProtectedPopup] = useState(false);
     const [pendingReaction, setPendingReaction] = useState(null);
+    const [expandedProjectId, setExpandedProjectId] = useState(null);
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -187,12 +188,14 @@ const Home = () => {
                     await updateDoc(doc(db, 'proyectos', editingProjectId), data);
                     console.log("Proyecto actualizado");
                 } else {
-                    await addDoc(collection(db, 'proyectos'), data);
-                    console.log("Proyecto creado");
+                     // Con addDoc se genera automáticamente un id único
+        const docRef = await addDoc(collection(db, 'proyectos'), data);
+        console.log("Proyecto creado con ID:", docRef.id);
                 }
             } else if (tipoPublicacion === 'evento') {
-                await addDoc(collection(db, 'eventos'), data);
-                console.log("Evento creado");
+                 // Se usa addDoc para eventos también
+      const docRef = await addDoc(collection(db, 'eventos'), data);
+      console.log("Evento creado con ID:", docRef.id);
             }
 
             handleClosePopup();
@@ -303,6 +306,10 @@ const toggleReaction = (id, type, pubTipo) => {
     const getFechaFin = (fechaFin) => {
         const hoy = new Date().toISOString().split('T')[0];
         return fechaFin > hoy ? 'Actualmente' : fechaFin;
+    };
+
+    const toggleExpandProject = (id) => {
+        setExpandedProjectId(prev => (prev === id ? null : id));
     };
 
     return (
@@ -456,7 +463,16 @@ const toggleReaction = (id, type, pubTipo) => {
                         <div
                             key={project.id}
                             className="post-card bg-white shadow-md rounded-2xl p-5 mb-6"
-                            style={{ maxWidth: '568px', marginInline: 'auto' }}
+                            style={{ maxWidth: '568px', marginInline: 'auto', cursor: 'pointer' }}
+                            onClick={(e) => {
+                                // Evitamos que clicks en botones disparen la expansión.
+                                if (
+                                  e.target.tagName !== 'BUTTON' && 
+                                  (!e.target.parentElement || e.target.parentElement.tagName !== 'BUTTON')
+                                ) {
+                                    toggleExpandProject(project.id);
+                                }
+                            }}
                         >
                             <div className="post-header flex items-start mb-4">
                                 <div className="author-photo mr-4" style={{ width: '60px', height: '60px' }}>
@@ -497,9 +513,16 @@ const toggleReaction = (id, type, pubTipo) => {
 </div>
                             </div>
 
+                            {/* Se limita la altura si no está expandida, mostrando un resumen */}
                             <div
                                 className="post-content text-gray-700 space-y-2"
-                                style={{ textAlign: 'left', fontSize: '0.9rem' }}  // Alinea el texto a la izquierda
+                                style={{
+                                    textAlign: 'left',
+                                    fontSize: '0.9rem',
+                                    maxHeight: expandedProjectId === project.id ? 'none' : '3rem',
+                                    overflow: 'hidden',
+                                    transition: 'max-height 0.3s ease'
+                                }}
                             >
                                 <p>
                                     <strong className="text-gray-900">
