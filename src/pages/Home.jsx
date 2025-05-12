@@ -35,6 +35,8 @@ const Home = () => {
     const [originalArchivoUrl, setOriginalArchivoUrl] = useState(null);
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
+    const [protectedPopup, setProtectedPopup] = useState(false);
+    const [pendingReaction, setPendingReaction] = useState(null);
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -243,35 +245,38 @@ const Home = () => {
     };
 
    // Dentro de Home.jsx, reemplaza o modifica toggleReaction:
-const toggleReaction = async (id, type, pubTipo) => {
-    if (user.isAnonymous) {
-        navigate('/login?register=true');
-        return;
-    }
-    const collectionName = pubTipo === 'evento' ? 'eventos' : 'proyectos';
-    const projectRef = doc(db, collectionName, id);
-    const projectSnap = await getDoc(projectRef);
-    if (!projectSnap.exists()) return;
-    const projectData = projectSnap.data();
-    const field = type === 'like' ? 'likes' : 'favorites';
-    const currentReactions = projectData[field] || [];
-    const alreadyReacted = currentReactions.includes(user.uid);
-    const updatedReactions = alreadyReacted
-        ? currentReactions.filter(uid => uid !== user.uid)
-        : [...currentReactions, user.uid];
+const toggleReactionProtected = async (id, type, pubTipo) => {
+  const collectionName = pubTipo === 'evento' ? 'eventos' : 'proyectos';
+  const projectRef = doc(db, collectionName, id);
+  const projectSnap = await getDoc(projectRef);
+  if (!projectSnap.exists()) return;
+  const projectData = projectSnap.data();
+  const field = type === 'like' ? 'likes' : 'favorites';
+  const currentReactions = projectData[field] || [];
+  const alreadyReacted = currentReactions.includes(user.uid);
+  const updatedReactions = alreadyReacted
+    ? currentReactions.filter(uid => uid !== user.uid)
+    : [...currentReactions, user.uid];
+  await updateDoc(projectRef, { [field]: updatedReactions });
+  if (!alreadyReacted && projectData.autorId !== user.uid) {
+    await createNotification({
+      type: type, // "like" o "favorite"
+      from: user.uid,
+      fromName: user.displayName,
+      to: projectData.autorId,
+      postName: projectData.nombre || projectData.titulo || 'tu publicación'
+    });
+  }
+};
 
-    await updateDoc(projectRef, { [field]: updatedReactions });
-
-    // Crea la notificación solo cuando se añade la reacción y el autor no es quien reacciona
-    if (!alreadyReacted && projectData.autorId !== user.uid) {
-        await createNotification({
-            type: type, // Usa el valor recibido: "like" o "favorite"
-            from: user.uid,
-            fromName: user.displayName,
-            to: projectData.autorId,
-            postName: projectData.nombre || projectData.titulo || 'tu publicación'
-        });
-    }
+const toggleReaction = (id, type, pubTipo) => {
+  if (user.isAnonymous) {
+    // En lugar de redirigir inmediatamente, mostramos el pop-up
+    setProtectedPopup(true);
+    setPendingReaction(() => () => toggleReactionProtected(id, type, pubTipo));
+    return;
+  }
+  toggleReactionProtected(id, type, pubTipo);
 };
 
     const formatDate = (timestamp) => {
@@ -469,18 +474,27 @@ const toggleReaction = async (id, type, pubTipo) => {
                                     />
                                 </div>
                                 <div className="author-info" style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div className="author-details flex flex-row items-center gap-2">
-                                        <h4 className="font-bold text-lg text-gray-800" style={{ margin: 0, display: 'inline-block' }}>
-                                            {userName}
-                                        </h4>
-                                        {project.autorId !== user.uid && (
-                                            <FollowButton targetUid={project.autorId} />
-                                        )}
-                                    </div>
-                                    <p className="post-date text-gray-500" style={{ fontSize: '0.7rem', margin: 0 }}>
-                                        {formatDate(project.fechaCreacion)}
-                                    </p>
-                                </div>
+  <div 
+    className="author-details" 
+    style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}
+  >
+    <h4 
+      className="font-bold text-lg text-gray-800" 
+      style={{ margin: 0, whiteSpace: 'nowrap' }}
+    >
+      {userName}
+    </h4>
+    {project.autorId !== user.uid && (
+      <FollowButton targetUid={project.autorId} />
+    )}
+  </div>
+  <p 
+    className="post-date text-gray-500" 
+    style={{ fontSize: '0.7rem', margin: 0 }}
+  >
+    {formatDate(project.fechaCreacion)}
+  </p>
+</div>
                             </div>
 
                             <div
@@ -620,6 +634,59 @@ const toggleReaction = async (id, type, pubTipo) => {
                                 }}
                             >
                                 Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {protectedPopup && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2000
+                }}>
+                    <div style={{
+                        backgroundColor: '#fff',
+                        padding: '2rem',
+                        borderRadius: '10px',
+                        textAlign: 'center',
+                        maxWidth: '400px',
+                        width: '90%'
+                    }}>
+                        <p>Esta acción requiere ingresar con una cuenta</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '1rem' }}>
+                            <button
+                                onClick={() => { setProtectedPopup(false); setPendingReaction(null); navigate('/home'); }}
+                                style={{
+                                    padding: '0.5rem 1rem',
+                                    backgroundColor: '#ccc',
+                                    border: 'none',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={() => { setProtectedPopup(false); navigate('/login?register=true'); }}
+                                style={{
+                                    padding: '0.5rem 1rem',
+                                    backgroundColor: '#8a2be2',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Continuar
                             </button>
                         </div>
                     </div>

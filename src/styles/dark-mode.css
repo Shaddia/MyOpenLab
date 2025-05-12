@@ -1293,6 +1293,16 @@ body.dark-mode .config-container {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* En light mode */
+body:not(.dark-mode) .followIcon {
+  color: #000;
+}
+
+/* En dark mode */
+body.dark-mode .followIcon {
+  color: #fff;
+}
+
 /* Estilos para formularios en modo oscuro */
 .dark-mode input,
 .dark-mode textarea,

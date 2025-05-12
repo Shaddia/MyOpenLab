@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/home.css';
 import defaultAvatar from '../assets/default-avatar.png';
-
+import FollowButton from '../components/FollowButton';
 import { useAuth } from '../context/useAuth';
 import { db } from '../services/firebase';
 import {
@@ -182,9 +182,23 @@ const Eventos = () => {
                                         onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
                                     />
                                 </div>
-                                <div className="author-details">
-                                    <h4 className="font-bold text-lg text-gray-800">{userName}</h4>
-                                    <p className="post-date text-sm text-gray-500" style={{ fontSize: '0.7rem' }}>
+                                <div className="author-info" style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div 
+                                        className="author-details" 
+                                        style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}
+                                    >
+                                        <h4 
+                                            style={{ margin: 0, whiteSpace: 'nowrap' }}
+                                        >
+                                            {userName}
+                                        </h4>
+                                        {event.autorId !== user.uid && (
+                                            <FollowButton targetUid={event.autorId} />
+                                        )}
+                                    </div>
+                                    <p 
+                                        style={{ fontSize: '0.7rem', margin: 0 }}
+                                    >
                                         {formatDate(event.fechaCreacion)}
                                     </p>
                                 </div>

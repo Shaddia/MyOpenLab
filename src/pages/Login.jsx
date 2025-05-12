@@ -28,6 +28,12 @@ export default function Login() {
     }
   }, [location.search]);
 
+  useEffect(() => {
+    // Forzamos que el body no tenga la clase dark-mode
+    document.body.classList.remove('dark-mode');
+    localStorage.setItem("darkMode", "false");
+  }, []);
+
   onAuthStateChanged(auth, (user) => {
     if (user) {
       console.log('Usuario autenticado:', user.uid);
