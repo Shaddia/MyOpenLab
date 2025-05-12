@@ -23,35 +23,27 @@ const MiPerfil = () => {
   const [posts, setPosts] = useState([]);
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Guardamos los ids como string
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [expandedEventoId, setExpandedEventoId] = useState(null);
 
-  // Estados para el formulario de edición
+  // Estados para edición
   const [isEditingPost, setIsEditingPost] = useState(null);
   const [editedPost, setEditedPost] = useState({ nombre: '', descripcion: '', herramientas: '', fechaFin: '' });
-
   const [isEditingEvento, setIsEditingEvento] = useState(null);
   const [editedEvento, setEditedEvento] = useState({ nombre: '', descripcion: '', ciudad: '', fechaEvento: '', horaEvento: '' });
-
-  // Estado para la edición de la información del perfil
   const [editedInfo, setEditedInfo] = useState({
     name: userData?.name || '',
     phone: userData?.phone || '',
   });
-
-
-  // Falta este estado:
   const [isEditing, setIsEditing] = useState(false);
-
   const [profileImage, setProfileImage] = useState(null);
-
   const fileInputRef = useRef(null);
 
   const fetchUserData = async () => {
     if (user && user.uid) {
       const docRef = doc(db, 'users', user.uid);
       const docSnap = await getDoc(docRef);
-
       if (docSnap.exists()) {
         setUserData(docSnap.data());
       } else {
@@ -67,17 +59,15 @@ const MiPerfil = () => {
 
       try {
         const postsSnapshot = await getDocs(postsQuery);
-        const postsData = postsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const postsData = postsSnapshot.docs.map((docSnap) => ({
+          uniqueId: String(docSnap.id),
+          ...docSnap.data(),
         }));
-
         const eventosSnapshot = await getDocs(eventosQuery);
-        const eventosData = eventosSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const eventosData = eventosSnapshot.docs.map((docSnap) => ({
+          uniqueId: String(docSnap.id),
+          ...docSnap.data(),
         }));
-
         setPosts(postsData);
         setEventos(eventosData);
       } catch (error) {
@@ -95,26 +85,26 @@ const MiPerfil = () => {
     }
   }, [user]);
 
-  const handleDeletePost = async (postId) => {
+  const handleDeletePost = async (postUniqueId) => {
     try {
-      await deleteDoc(doc(db, 'proyectos', postId));
-      setPosts(posts.filter((post) => post.id !== postId));
+      await deleteDoc(doc(db, 'proyectos', postUniqueId));
+      setPosts(posts.filter((post) => post.uniqueId !== postUniqueId));
     } catch (error) {
       console.error('Error al eliminar el proyecto: ', error);
     }
   };
 
-  const handleDeleteEvent = async (eventId) => {
+  const handleDeleteEvent = async (eventUniqueId) => {
     try {
-      await deleteDoc(doc(db, 'eventos', eventId));
-      setEventos(eventos.filter((evento) => evento.id !== eventId));
+      await deleteDoc(doc(db, 'eventos', eventUniqueId));
+      setEventos(eventos.filter((evento) => evento.uniqueId !== eventUniqueId));
     } catch (error) {
       console.error('Error al eliminar el evento: ', error);
     }
   };
 
-  const handleEditPost = async (postId) => {
-    const postRef = doc(db, 'proyectos', postId);
+  const handleEditPost = async (postUniqueId) => {
+    const postRef = doc(db, 'proyectos', postUniqueId);
     try {
       await updateDoc(postRef, {
         nombre: editedPost.nombre,
@@ -122,15 +112,19 @@ const MiPerfil = () => {
         herramientas: editedPost.herramientas,
         fechaFin: editedPost.fechaFin,
       });
-      setPosts(posts.map((post) => post.id === postId ? { ...post, ...editedPost } : post));
-      setIsEditingPost(null); // Cerrar el modal de edición
+      setPosts(
+        posts.map((post) =>
+          post.uniqueId === postUniqueId ? { ...post, ...editedPost } : post
+        )
+      );
+      setIsEditingPost(null);
     } catch (error) {
       console.error('Error al editar el proyecto: ', error);
     }
   };
 
-  const handleEditEvento = async (eventoId) => {
-    const eventoRef = doc(db, 'eventos', eventoId);
+  const handleEditEvento = async (eventUniqueId) => {
+    const eventoRef = doc(db, 'eventos', eventUniqueId);
     try {
       await updateDoc(eventoRef, {
         nombre: editedEvento.nombre,
@@ -139,8 +133,12 @@ const MiPerfil = () => {
         fechaEvento: editedEvento.fechaEvento,
         horaEvento: editedEvento.horaEvento,
       });
-      setEventos(eventos.map((evento) => evento.id === eventoId ? { ...evento, ...editedEvento } : evento));
-      setIsEditingEvento(null); // Cerrar el modal de edición
+      setEventos(
+        eventos.map((evento) =>
+          evento.uniqueId === eventUniqueId ? { ...evento, ...editedEvento } : evento
+        )
+      );
+      setIsEditingEvento(null);
     } catch (error) {
       console.error('Error al editar el evento: ', error);
     }
@@ -152,7 +150,7 @@ const MiPerfil = () => {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64 = reader.result;
-        setProfileImage(base64); // Para mostrarla inmediatamente
+        setProfileImage(base64);
         try {
           const userRef = doc(db, 'users', user.uid);
           await updateDoc(userRef, { photoURL: base64 });
@@ -165,12 +163,15 @@ const MiPerfil = () => {
     }
   };
 
-  const toggleExpandPost = (id) => {
-    setExpandedPostId(prevId => (prevId === id ? null : id));
+  // Se asegura que se asigna y compara como string
+  const toggleExpandPost = (uniqueId) => {
+    const id = String(uniqueId);
+    setExpandedPostId((prevId) => (prevId === id ? null : id));
   };
 
-  const toggleExpandEvento = (id) => {
-    setExpandedEventoId(expandedEventoId === id ? null : id);
+  const toggleExpandEvento = (uniqueId) => {
+    const id = String(uniqueId);
+    setExpandedEventoId((prevId) => (prevId === id ? null : id));
   };
 
   const handleChangePost = (e) => {
@@ -188,36 +189,21 @@ const MiPerfil = () => {
     setEditedInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Función para guardar los cambios en Firebase
   const handleSaveChanges = async () => {
     const userRef = doc(db, 'users', user.uid);
-
     try {
-      // Preparamos los datos a actualizar solo con los campos modificados
       const updatedData = {
-        name: editedInfo.name || userData.name, // Si 'name' está vacío, mantenemos el valor anterior
-        phone: editedInfo.phone || userData.phone, // Lo mismo para 'phone'
+        name: editedInfo.name || userData.name,
+        phone: editedInfo.phone || userData.phone,
       };
-
-      // Actualizamos el documento en Firestore
       await updateDoc(userRef, updatedData);
-
-      // Actualizamos el estado local para reflejar los cambios
-      setUserData((prev) => ({
-        ...prev,
-        name: updatedData.name,
-        phone: updatedData.phone,
-      }));
-
-      // Desactivamos el modo de edición
+      setUserData((prev) => ({ ...prev, ...updatedData }));
       setIsEditing(false);
     } catch (error) {
       console.error('Error al guardar los cambios: ', error);
     }
   };
 
-
-  // Función para activar el modo de edición
   const handleEdit = () => {
     setIsEditing(true);
   };
@@ -232,8 +218,8 @@ const MiPerfil = () => {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'row-reverse', padding: '2rem', gap: '2rem' }}>
-       
-        <div className='profile-container' style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem' }}>
+        {/* Contenedor de perfil */}
+        <div className="profile-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem' }}>
           <div
             style={{
               width: '130px',
@@ -243,7 +229,7 @@ const MiPerfil = () => {
               border: '3px solid #8a2be2',
               boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
               overflow: 'hidden',
-              marginBottom: '1rem',
+              marginBottom: '1rem'
             }}
           >
             {userData?.photoURL ? (
@@ -258,29 +244,20 @@ const MiPerfil = () => {
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#aaa',
-                  fontSize: '0.9rem',
-                }}
-              >
+              <div style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#aaa',
+                fontSize: '0.9rem'
+              }}>
                 Sin foto
               </div>
             )}
           </div>
-          {/* Input file oculto */}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-          />
+          <input type="file" accept="image/*" onChange={handleFileChange} ref={fileInputRef} style={{ display: 'none' }} />
           <button
             onClick={() => fileInputRef.current && fileInputRef.current.click()}
             style={{
@@ -295,14 +272,13 @@ const MiPerfil = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '1.5rem',
+              marginBottom: '1.5rem'
             }}
           >
             <FontAwesomeIcon icon={faCamera} />
           </button>
-          {/* Información del perfil */}
-          
-          <div className='profile-container'
+          <div
+            className="profile-container"
             style={{
               backgroundColor: '#fff',
               borderRadius: '10px',
@@ -315,11 +291,15 @@ const MiPerfil = () => {
             }}
           >
             <h3 style={{ marginBottom: '2rem', color: 'white' }}>Información del Perfil</h3>
-            <p><strong>Nombre:</strong> {userData?.name || 'No especificado'}</p>
-            <p><strong>Email:</strong> {userData?.email || user.email}</p>
-            <p><strong>Teléfono:</strong> {userData?.phone || 'No registrado'}</p>
-
-            {/* Aquí puedes incluir el botón de editar si deseas */}
+            <p>
+              <strong>Nombre:</strong> {userData?.name || 'No especificado'}
+            </p>
+            <p>
+              <strong>Email:</strong> {userData?.email || user.email}
+            </p>
+            <p>
+              <strong>Teléfono:</strong> {userData?.phone || 'No registrado'}
+            </p>
             {!isEditing ? (
               <button
                 onClick={handleEdit}
@@ -329,7 +309,7 @@ const MiPerfil = () => {
                   color: '#fff',
                   border: 'none',
                   cursor: 'pointer',
-                  marginTop: '1rem',
+                  marginTop: '1rem'
                 }}
               >
                 Editar
@@ -361,7 +341,7 @@ const MiPerfil = () => {
                     color: '#fff',
                     border: 'none',
                     cursor: 'pointer',
-                    marginTop: '1rem',
+                    marginTop: '1rem'
                   }}
                 >
                   Guardar cambios
@@ -369,9 +349,9 @@ const MiPerfil = () => {
               </div>
             )}
           </div>
-      
         </div>
 
+        {/* Contenedor de tarjetas */}
         <div
           className="cards-container"
           style={{
@@ -379,12 +359,9 @@ const MiPerfil = () => {
             borderRadius: '10px',
             padding: '2rem',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-            maxWidth: '950px',
+            maxWidth: '950px'
           }}
         >
-
-
-          {/* Mostrar Proyectos */}
           <div style={{ marginTop: '2rem' }}>
             <div style={{
               backgroundColor: '#1c2833',
@@ -396,31 +373,34 @@ const MiPerfil = () => {
             }}>
               <h3 style={{ margin: 0, fontSize: '0.7rem' }}>Mis proyectos</h3>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: '1.5rem'
+            }}>
               {posts.length > 0 ? (
                 posts.map((post) => (
                   <div
-                    key={post.id}
-                    onClick={() => toggleExpandPost(post.id)}
+                    key={post.uniqueId}
+                    onClick={() => toggleExpandPost(post.uniqueId)}
                     style={{
-                      width: '320px', // Se aumentó el ancho
+                      overflow: expandedPostId === post.uniqueId ? 'visible' : 'hidden',
+                      width: '320px',
                       borderRadius: '10px',
-                      clipPath: 'inset(0 round 10px)', // Mantiene esquinas redondeadas incluso al expandir
+                      clipPath: 'inset(0 round 10px)',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      // Siempre visible para que se muestre la descripción (el resto se expande)
-                      overflow: expandedPostId === post.id ? 'visible' : 'hidden',
                       cursor: 'pointer',
                       transition: 'transform 0.2s',
                       fontSize: '0.85rem',
                       position: 'relative',
                       margin: '0 auto',
-                      backgroundColor: '#e8daef', //COLOR TARJETA ABAJO
+                      backgroundColor: '#e8daef'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                   >
                     <div style={{
-                      backgroundColor: '#1c2833', //COLOR TARJETA BARRA
+                      backgroundColor: '#1c2833',
                       color: 'white',
                       padding: '0.5rem 0.75rem',
                       fontWeight: 'bold',
@@ -430,7 +410,7 @@ const MiPerfil = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setIsEditingPost(post.id);
+                          setIsEditingPost(post.uniqueId);
                           setEditedPost({
                             nombre: post.nombre,
                             descripcion: post.descripcion,
@@ -440,9 +420,9 @@ const MiPerfil = () => {
                         }}
                         style={{
                           position: 'absolute',
-                          top: '0.1rem', //ALTURA ICONO EDITAR
+                          top: '0.1rem',
                           right: '2.5rem',
-                          backgroundColor: 'transparent', //COLOR ICONOS  EDITAR
+                          backgroundColor: 'transparent',
                           border: 'none',
                           color: 'white',
                           cursor: 'pointer'
@@ -453,13 +433,13 @@ const MiPerfil = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeletePost(post.id);
+                          handleDeletePost(post.uniqueId);
                         }}
                         style={{
                           position: 'absolute',
-                          top: '0.1rem', //ALTURA ICONO BASURA
+                          top: '0.1rem',
                           right: '0.5rem',
-                          backgroundColor: 'transparent', //COLOR ICONOS BASURA 
+                          backgroundColor: 'transparent',
                           border: 'none',
                           color: 'white',
                           cursor: 'pointer'
@@ -469,12 +449,13 @@ const MiPerfil = () => {
                       </button>
                     </div>
                     <div style={{ padding: '0.5rem', position: 'relative' }}>
-                      {/* La descripción se muestra siempre */}
-                      <p><strong>Descripción:</strong> {post.descripcion || 'Sin descripción'}</p>
-                      {expandedPostId === post.id && (
+                      <p>
+                        <strong>Descripción:</strong> {post.descripcion || 'Sin descripción'}
+                      </p>
+                      {expandedPostId === post.uniqueId && (
                         <>
                           <p><strong>Herramientas:</strong> {post.herramientas}</p>
-                          {post.caracteristicas && <p><strong>Características:</strong> {post.caracteristicas}</p>}
+                          {post.caracteristicas && (<p><strong>Características:</strong> {post.caracteristicas}</p>)}
                           <p><strong>Fecha de Inicio:</strong> {formatTimestamp(post.fechaInicio)}</p>
                           <p><strong>Fecha de Fin:</strong> {formatTimestamp(post.fechaFin)}</p>
                           {post.archivoUrl && (
@@ -489,7 +470,6 @@ const MiPerfil = () => {
                               </a>
                             </p>
                           )}
-                          {/* El rectángulo gris solo se mostrará al expandir la tarjeta */}
                           <div style={{
                             position: 'absolute',
                             bottom: '5px',
@@ -513,7 +493,6 @@ const MiPerfil = () => {
             </div>
           </div>
 
-          {/* Mostrar Eventos */}
           <div style={{ marginTop: '2rem' }}>
             <div style={{
               backgroundColor: '#1c2833',
@@ -525,27 +504,32 @@ const MiPerfil = () => {
             }}>
               <h3 style={{ margin: 0, fontSize: '0.7rem' }}>Mis Eventos</h3>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: '1.5rem'
+            }}>
               {eventos.length > 0 ? (
                 eventos.map((evento) => (
                   <div
-                    key={evento.id}
-                    onClick={() => toggleExpandEvento(evento.id)}
+                    key={evento.uniqueId}
+                    onClick={() => toggleExpandEvento(evento.uniqueId)}
                     style={{
-                      width: '320px', // Igual que la tarjeta de proyecto
-                      backgroundColor: '#e8daef', //COLOR TARJETA ABAJO
+                      overflow: expandedEventoId === evento.uniqueId ? 'visible' : 'hidden',
+                      width: '320px',
+                      backgroundColor: '#e8daef',
                       borderRadius: '10px',
                       clipPath: 'inset(0 round 10px)',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                      overflow: expandedEventoId === evento.id ? 'visible' : 'hidden',
                       cursor: 'pointer',
                       transition: 'transform 0.2s',
                       fontSize: '0.85rem',
                       position: 'relative',
                       margin: '0 auto'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                  >
                     <div style={{
                       backgroundColor: '#1c2833',
                       color: 'white',
@@ -557,19 +541,19 @@ const MiPerfil = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setIsEditingEvento(evento.id);
+                          setIsEditingEvento(evento.uniqueId);
                           setEditedEvento({
                             nombre: evento.nombre,
                             descripcion: evento.descripcion,
                             ciudad: evento.ciudad,
                             fechaEvento: evento.fechaEvento,
-                            horaEvento: evento.horaEvento,
+                            horaEvento: evento.horaEvento
                           });
                         }}
                         style={{
                           position: 'absolute',
-                          top: '0.1rem', //ALTURA ICONO EDITAR
-                          right: '40px', // Ahora el botón de editar está aquí
+                          top: '0.1rem',
+                          right: '40px',
                           backgroundColor: 'transparent',
                           border: 'none',
                           color: '#fff',
@@ -581,12 +565,12 @@ const MiPerfil = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteEvent(evento.id);
+                          handleDeleteEvent(evento.uniqueId);
                         }}
                         style={{
                           position: 'absolute',
-                          top: '0.1rem', //ALTURA ICONO BASURA
-                          right: '10px', // Ahora el botón de eliminar está aquí
+                          top: '0.1rem',
+                          right: '10px',
                           backgroundColor: 'transparent',
                           border: 'none',
                           color: '#fff',
@@ -597,9 +581,10 @@ const MiPerfil = () => {
                       </button>
                     </div>
                     <div style={{ padding: '1rem', position: 'relative' }}>
-                      {/* Siempre visible: descripción */}
-                      <p><strong>Descripción:</strong> {evento.descripcion}</p>
-                      {expandedEventoId === evento.id && (
+                      <p>
+                        <strong>Descripción:</strong> {evento.descripcion}
+                      </p>
+                      {expandedEventoId === evento.uniqueId && (
                         <>
                           <p><strong>Ciudad:</strong> {evento.ciudad}</p>
                           <p><strong>Fecha de Evento:</strong> {evento.fechaEvento}</p>
@@ -643,31 +628,29 @@ const MiPerfil = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de edición de proyecto */}
       {isEditingPost && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#f5f5f5',
-              padding: '2rem',
-              borderRadius: '10px',
-              width: '90%',
-              maxWidth: '500px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            }}
-          >
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: '#f5f5f5',
+            padding: '2rem',
+            borderRadius: '10px',
+            width: '90%',
+            maxWidth: '500px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+          }}>
             <h3 style={{ marginBottom: '1rem', textAlign: 'center' }}>Editar Proyecto</h3>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem' }}>Nombre:</label>
@@ -736,7 +719,7 @@ const MiPerfil = () => {
                   backgroundColor: '#ccc',
                   border: 'none',
                   borderRadius: '5px',
-                  cursor: 'pointer',
+                  cursor: 'pointer'
                 }}
               >
                 Cancelar
@@ -749,7 +732,7 @@ const MiPerfil = () => {
                   color: '#fff',
                   border: 'none',
                   borderRadius: '5px',
-                  cursor: 'pointer',
+                  cursor: 'pointer'
                 }}
               >
                 Guardar
@@ -759,31 +742,28 @@ const MiPerfil = () => {
         </div>
       )}
 
+      {/* Modal de edición de evento */}
       {isEditingEvento && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#fff',
-              padding: '2rem',
-              borderRadius: '10px',
-              width: '90%',
-              maxWidth: '500px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            }}
-          >
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            padding: '2rem',
+            borderRadius: '10px',
+            width: '90%',
+            maxWidth: '500px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+          }}>
             <h3 style={{ marginBottom: '1rem', textAlign: 'center' }}>Editar Evento</h3>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem' }}>Nombre:</label>
@@ -852,7 +832,7 @@ const MiPerfil = () => {
                   backgroundColor: '#ccc',
                   border: 'none',
                   borderRadius: '5px',
-                  cursor: 'pointer',
+                  cursor: 'pointer'
                 }}
               >
                 Cancelar
@@ -865,7 +845,7 @@ const MiPerfil = () => {
                   color: '#fff',
                   border: 'none',
                   borderRadius: '5px',
-                  cursor: 'pointer',
+                  cursor: 'pointer'
                 }}
               >
                 Guardar
@@ -876,8 +856,6 @@ const MiPerfil = () => {
       )}
     </Layout>
   );
-
-
 };
 
 export default MiPerfil;
