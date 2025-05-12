@@ -123,4 +123,4 @@ firebase deploy
 
 ## 👤 Autor
 
-Shaddia
+Shaddia Acuña
