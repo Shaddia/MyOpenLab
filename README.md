@@ -122,5 +122,7 @@ firebase deploy
 ```
 
 ## 👤 Autor
-
 Shaddia Acuña
+
+## Deploy
+https://mi-openlab.web.app
