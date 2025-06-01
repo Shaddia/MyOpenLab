@@ -9,6 +9,26 @@ import { ref, deleteObject } from 'firebase/storage';
 import { getAuth, deleteUser, signOut, updatePassword, sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import Layout from '../components/Layout';
 import { useLanguage } from '../context/LanguageContext';
+import { sendPasswordResetEmail } from 'firebase/auth';
+
+const handlePasswordRecovery = async () => {
+  const auth = getAuth();
+  try {
+    await sendPasswordResetEmail(auth, user.email);
+    alert(
+      language === 'es'
+        ? "Se ha enviado un correo de recuperación a tu correo registrado."
+        : "Recovery email sent to your registered email."
+    );
+  } catch (error) {
+    console.error("Error enviando el correo de recuperación:", error);
+    alert(
+      language === 'es'
+        ? "Error enviando el correo de recuperación: " + error.message
+        : "Error sending recovery email: " + error.message
+    );
+  }
+};
 
 const translations = {
   es: {
@@ -105,18 +125,53 @@ const Configuración = () => {
   };
 
   const handleChangePassword = async () => {
-    const currentPassword = window.prompt(language === 'es'
-      ? "Ingresa tu contraseña actual:"
-      : "Enter your current password:");
+    // Primero, pregunta si el usuario olvidó su contraseña
+    const forgot = window.confirm(
+      language === 'es'
+        ? "¿Olvidaste tu contraseña? Presiona 'Aceptar' para enviar un correo de recuperación a tu correo registrado."
+        : "Forgot your password? Click OK to send a recovery email to your registered email."
+    );
+    if (forgot) {
+      try {
+        const auth = getAuth();
+        await sendPasswordResetEmail(auth, user.email);
+        alert(
+          language === 'es'
+            ? `Se ha enviado un correo de recuperación a ${user.email}.`
+            : `Recovery email sent to ${user.email}.`
+        );
+      } catch (error) {
+        console.error("Error enviando el correo de recuperación:", error);
+        alert(
+          language === 'es'
+            ? "Error enviando el correo de recuperación: " + error.message
+            : "Error sending recovery email: " + error.message
+        );
+      }
+      return;
+    }
+    
+    // Si el usuario no olvidó su contraseña, continúa con el proceso de cambio
+    const currentPassword = window.prompt(
+      language === 'es'
+        ? "Ingresa tu contraseña actual:"
+        : "Enter your current password:"
+    );
     if (!currentPassword) return;
   
-    const newPassword = window.prompt(language === 'es'
-      ? "Ingrese su nueva contraseña (mínimo 6 caracteres):"
-      : "Enter your new password (at least 6 characters):");
-    if (!newPassword || newPassword.length < 6) {
-      alert(language === 'es'
-        ? "La nueva contraseña debe tener al menos 6 caracteres."
-        : "The new password must be at least 6 characters.");
+    const newPassword = window.prompt(
+      language === 'es'
+        ? "Ingrese su nueva contraseña (mínimo 6 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo):"
+        : "Enter your new password (min 6 characters, 1 uppercase, 1 lowercase, 1 number, 1 symbol):"
+    );
+    // Expresión regular para validar la contraseña
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%&*])[A-Za-z\d!@#$%&*]{6,}$/;
+    if (!newPassword || !passwordRegex.test(newPassword)) {
+      alert(
+        language === 'es'
+          ? "La contraseña debe tener al menos 6 caracteres, una letra mayúscula, una letra minúscula, un número y un símbolo."
+          : "The password must be at least 6 characters and include an uppercase letter, a lowercase letter, a number, and a symbol."
+      );
       return;
     }
     
@@ -126,12 +181,18 @@ const Configuración = () => {
       await updatePassword(user, newPassword);
       await updateDoc(doc(db, 'users', user.uid), { password: newPassword });
       await sendEmailVerification(user);
-      alert(language === 'es'
-        ? "La contraseña se actualizó exitosamente. Se ha enviado un correo de verificación a tu correo."
-        : "Password updated successfully. A verification email has been sent to your account.");
+      alert(
+        language === 'es'
+          ? "La contraseña se actualizó exitosamente. Se ha enviado un correo de verificación a tu correo."
+          : "Password updated successfully. A verification email has been sent to your account."
+      );
     } catch (error) {
       console.error("Error cambiando la contraseña:", error);
-      alert((language === 'es' ? "Error cambiando la contraseña: " : "Error changing password: ") + error.message);
+      alert(
+        language === 'es'
+          ? "Error cambiando la contraseña: " + error.message
+          : "Error changing password: " + error.message
+      );
     }
   };
 
