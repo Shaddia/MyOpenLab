@@ -9,7 +9,11 @@
 .inicio-container {
   position: relative;
   width: 100%;
-  min-height: 100vh;
+  height: auto;
+  /* Usa auto para permitir crecer con el contenido */
+  min-height: 100%;
+  overflow: visible;
+  /* Asegura que el contenido no se corte */
   background: #fff;
 }
 
@@ -25,7 +29,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 2rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
 
@@ -54,12 +58,16 @@
 
 /* Sección hero */
 .hero-section {
-  position: relative;
-  padding-top: 60px; /* Inicia justo debajo de la navbar */
+  padding-top: 60px;
+  /* Justo debajo de la navbar */
+  padding-bottom: 0;
+  /* Elimina padding inferior */
   width: 100%;
-  height: 600px;  /* Dimensión del "cuadrado" deseado */
+  min-height: 600px;
+  /* Altura mínima para el contenido del héroe */
+  height: auto;
+  /* Permite que la sección ajuste su altura según el contenido */
   background: #fff;
-  overflow: hidden;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -78,10 +86,10 @@
 
 .wave {
   display: block;
-  width: 200%;          
-  height: 700px;        
-  transform: scaleY(-1); 
-  margin-left: -50%;     
+  width: 200%;
+  height: 700px;
+  transform: scaleY(-1);
+  margin-left: -50%;
 }
 
 /* Contenedor izquierdo: información actual */
@@ -105,6 +113,16 @@
 .subtitle {
   font-size: 1.5rem;
   margin-bottom: 2rem;
+}
+
+/* Contenedor de scroll que envuelve todo el contenido */
+.scroll-container {
+  height: 100vh;
+  /* Ocupa toda la altura de la ventana */
+  overflow-y: auto;
+  /* Permite scroll vertical */
+  -webkit-overflow-scrolling: touch;
+  /* Para suavizar el scroll en dispositivos táctiles */
 }
 
 /* Botones de la sección izquierda */
@@ -142,17 +160,21 @@
   position: relative;
   z-index: 2;
   width: 25%;
-  height: 55%;            /* Reducido ligeramente para evitar tocar el borde inferior */
+  height: 55%;
+  /* Reducido ligeramente para evitar tocar el borde inferior */
   background: #fff;
   border-radius: 15px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-  padding: 1.2rem;        /* Padding reducido */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  padding: 1.2rem;
+  /* Padding reducido */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   color: #333;
-  margin-top: -14rem;      /* Aumentado el margen superior negativo */
-  margin-right: 200px;      /* Añadido margen derecho para separación */
+  margin-top: -14rem;
+  /* Aumentado el margen superior negativo */
+  margin-right: 200px;
+  /* Añadido margen derecho para separación */
 }
 
 /* Encabezado del perfil */
@@ -164,7 +186,8 @@
 }
 
 .profile-name {
-  font-size: 1.8rem;       /* Tamaño de fuente reducido */
+  font-size: 1.8rem;
+  /* Tamaño de fuente reducido */
   font-weight: bold;
   text-transform: uppercase;
   margin: 0;
@@ -173,16 +196,19 @@
 .profile-status {
   background: #28a745;
   color: #fff;
-  padding: 0.2rem 0.5rem;   /* Padding reducido */
+  padding: 0.2rem 0.5rem;
+  /* Padding reducido */
   margin-left: 0.5rem;
   border-radius: 5px;
-  font-size: 0.8rem;        /* Fuente reducida */
+  font-size: 0.8rem;
+  /* Fuente reducida */
   text-transform: uppercase;
 }
 
 /* Descripción del perfil */
 .profile-desc {
-  font-size: 0.9rem;       /* Fuente ligeramente reducida */
+  font-size: 0.9rem;
+  /* Fuente ligeramente reducida */
   margin: 0.3rem 0 0.8rem;
   width: 100%;
   text-align: left;
@@ -192,10 +218,11 @@
 .squares-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.8rem;             /* Gap reducido entre tarjetas */
+  gap: 0.8rem;
+  /* Gap reducido entre tarjetas */
   width: 90%;
   margin-top: 0;
-  margin-left:5%;
+  margin-left: 5%;
 }
 
 /* Estilo de cada cuadrado (tarjeta de proyecto) */
@@ -203,21 +230,24 @@
   background: #cdbecf;
   color: #333;
   border-radius: 10px;
-  padding: 0.5rem;         /* Menor padding interno */
+  padding: 0.5rem;
+  /* Menor padding interno */
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  font-size: 0.8rem;        /* Fuente más pequeña */
+  font-size: 0.8rem;
+  /* Fuente más pequeña */
 }
 
 .square:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Título del proyecto dentro del cuadrado */
 .project-title {
-  font-size: 0.8rem;       /* Fuente reducida */
+  font-size: 0.8rem;
+  /* Fuente reducida */
   font-weight: 600;
   margin-bottom: 0.3rem;
   text-transform: uppercase;
@@ -225,7 +255,8 @@
 
 /* Estado del proyecto */
 .project-status {
-  font-size: 0.7rem;       /* Fuente reducida */
+  font-size: 0.7rem;
+  /* Fuente reducida */
   font-weight: bold;
   padding: 0.2rem;
   border-radius: 5px;
@@ -235,10 +266,10 @@
 
 /* Contenedor de la barra de progreso */
 .progress-container {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 5px;
-  height: 6px;             /* Altura reducida */
-  overflow: hidden;
+  height: 6px;
+  /* Altura reducida */
 }
 
 /* Barra de progreso */
@@ -250,11 +281,16 @@
 
 /* Nueva sección blanca: Tarjeta informativa */
 .features-section {
+  display: block;
   background: #fff;
-  padding: 4rem 2rem;
+  padding: 2rem 1rem;
   text-align: center;
   border-top: 1px solid #e6e6e6;
-  margin-top: 2rem;
+  margin-top: 0;
+  /* Elimina el espacio extra */
+  padding-top: 0rem;
+  /* Puedes ajustar este valor si quieres algo de separación */
+  min-height: 200px;
 }
 
 .features-title {
@@ -282,7 +318,7 @@
 .card {
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   flex: 0 0 calc(50% - 2rem);
   max-width: calc(50% - 2rem);
@@ -295,7 +331,7 @@
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 
 .card-icon {
@@ -317,25 +353,242 @@
   line-height: 1.4;
 }
 
-/* Responsive: en pantallas pequeñas las tarjetas se apilan */
+/* Nueva sección: Cómo funciona */
+.steps-section {
+  background: #f4ecf7;
+  /* Fondo claro */
+  padding: 4rem 2rem;
+  text-align: center;
+  border-top: 1px solid #e6e6e6;
+  margin-top: 2rem;
+}
+
+.steps-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.steps-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+.steps-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.step-card {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  flex: 1 1 300px;
+  max-width: calc(33.333% - 2rem);
+  text-align: left;
+}
+
+.step-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.step-desc {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.4;
+}
+
 @media (max-width: 768px) {
-  .card {
-    flex: 0 0 100%;
+  .step-card {
     max-width: 100%;
   }
 }
 
-.features-section {
-  display: block;
-  background: #fff;
+/* Nueva sección: Testimonios */
+.testimonials-section {
+  background: #f9f9f9;
+  /* Fondo claro similar al de "Cómo funciona" */
   padding: 4rem 2rem;
   text-align: center;
   border-top: 1px solid #e6e6e6;
-  margin-top: -10rem;   /* Reducido de 2rem a 1rem */
-  min-height: 200px;
+  margin-top: 2rem;
 }
 
-html, body {
+.testimonials-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.testimonials-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+.testimonials-container {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.testimonial-card {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  flex: 1 1 300px;
+  max-width: calc(33.333% - 2rem);
+  text-align: left;
+  position: relative;
+}
+
+.testimonial-initials {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #8a2be2;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.testimonial-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+  color: #333;
+}
+
+.testimonial-role {
+  font-size: 1rem;
+  color: #777;
+  margin-bottom: 1rem;
+}
+
+.testimonial-text {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.testimonial-rating {
+  font-size: 1rem;
+  color: #f39c12;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .testimonial-card {
+    max-width: 100%;
+  }
+}
+
+/* Nueva sección: Planes para cada necesidad */
+.plans-section {
+  background: #f4ecf7;
+  padding: 4rem 2rem;
+  text-align: center;
+  border-top: 1px solid #e6e6e6;
+  margin-top: 2rem;
+}
+
+.plans-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.plans-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+.plans-container {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.plan-card {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  flex: 1 1 300px;
+  max-width: calc(33.333% - 2rem);
+  text-align: left;
+  position: relative;
+}
+
+.plan-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.plan-desc {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+.plan-price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #8a2be2;
+}
+
+.plan-benefits {
+  list-style: none;
+  margin-bottom: 1rem;
+}
+
+.plan-benefits li {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 0.3rem;
+}
+
+.plan-btn {
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  background: #8a2be2 !important;
+  color: #fff !important;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.plan-btn:hover {
+  background: #732f9b;
+}
+
+html,
+body {
+  min-height: 100%;
   height: auto;
   overflow-y: auto;
+  scroll-behavior: smooth;
+
 }
