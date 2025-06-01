@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
+import Inicio from './pages/Inicio';
 import Login from './pages/Login';
 import MiPerfil from './pages/Miperfil';
 import Home from './pages/Home';
@@ -23,7 +24,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Login />} />
+            <Route path="/" element={<Inicio />} /> 
             <Route path="/login" element={<Login />} />
             <Route path="/eventos" element={<Eventos />} />
             <Route path="/home" element={<Home />} />
