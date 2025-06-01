@@ -67,7 +67,7 @@ const PrivateRoute = ({ children }) => {
                 onClick={handleContinue}
                 style={{
                   padding: '0.5rem 1rem',
-                  backgroundColor: 'black',
+                  backgroundColor: '#8a2be2',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '5px',

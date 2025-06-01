@@ -5,6 +5,7 @@ import { db } from '../services/firebase';
 import Layout from '../components/Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import defaultAvatar from '../assets/default-avatar.png';
 
 // Función para formatear timestamps
@@ -35,6 +36,8 @@ const MiPerfil = () => {
   const [editedInfo, setEditedInfo] = useState({
     name: userData?.name || '',
     phone: userData?.phone || '',
+    bio: userData?.bio || '',          // campo para biografía
+    github: userData?.github || '',    // campo para links de GitHub
   });
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
@@ -193,8 +196,10 @@ const MiPerfil = () => {
     const userRef = doc(db, 'users', user.uid);
     try {
       const updatedData = {
-        name: editedInfo.name || userData.name,
-        phone: editedInfo.phone || userData.phone,
+        name: editedInfo.name || userData?.name || "",
+        phone: editedInfo.phone || userData?.phone || "",
+        bio: editedInfo.bio || userData?.bio || "",
+        github: editedInfo.github ?? userData?.github ?? "" // si es undefined, se asigna ""
       };
       await updateDoc(userRef, updatedData);
       setUserData((prev) => ({ ...prev, ...updatedData }));
@@ -284,7 +289,7 @@ const MiPerfil = () => {
               borderRadius: '10px',
               padding: '2rem',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              maxWidth: '950px',
+              maxWidth: '350px',
               width: '100%',
               textAlign: 'center',
               color: 'white'
@@ -299,6 +304,21 @@ const MiPerfil = () => {
             </p>
             <p>
               <strong>Teléfono:</strong> {userData?.phone || 'No registrado'}
+            </p>
+            <p>
+              <strong>Sobre mi:</strong> {userData?.bio || '¡Habla un poco sobre ti!'}
+            </p>
+            <p>
+              <strong>GitHub</strong> {userData?.github ? (
+                <a
+                  href={userData.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none', marginLeft: '0.5rem' }}
+                >
+                  <FontAwesomeIcon icon={faGithub} size="1x" style={{ color: '#fff' }} />
+                </a>
+              ) : 'Ninguno'}
             </p>
             {!isEditing ? (
               <button
@@ -333,6 +353,21 @@ const MiPerfil = () => {
                   placeholder="Teléfono"
                   style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem' }}
                 />
+                <textarea
+                  name="bio"
+                  value={editedInfo.bio}
+                  onChange={handleChange}
+                  placeholder="Cuéntanos sobre ti..."
+                  style={{ width: '100%', marginBottom: '0.5rem', padding: '0.5rem' }}
+                />
+                <input
+                  type="text"
+                  name="github"
+                  value={editedInfo.github}
+                  onChange={handleChange}
+                  placeholder="Link a tus proyectos de GitHub"
+                  style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem' }}
+                />
                 <button
                   onClick={handleSaveChanges}
                   style={{
@@ -344,6 +379,7 @@ const MiPerfil = () => {
                     marginTop: '1rem'
                   }}
                 >
+
                   Guardar cambios
                 </button>
               </div>
