@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt, faCamera } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import defaultAvatar from '../assets/default-avatar.png';
+import { useNavigate, Link } from 'react-router-dom';
 
 // Función para formatear timestamps
 const formatTimestamp = (timestamp) => {
@@ -20,6 +21,7 @@ const formatTimestamp = (timestamp) => {
 
 const MiPerfil = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [posts, setPosts] = useState([]);
   const [eventos, setEventos] = useState([]);
@@ -42,6 +44,12 @@ const MiPerfil = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Estados para modales de seguidores y seguidos
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followersData, setFollowersData] = useState([]);
+  const [followingData, setFollowingData] = useState([]);
 
   const fetchUserData = async () => {
     if (user && user.uid) {
@@ -81,12 +89,51 @@ const MiPerfil = () => {
     }
   };
 
+  const fetchFollowersInfo = async (followers) => {
+    const results = await Promise.all(
+      followers.map(async (followerUID) => {
+        const docRef = doc(db, 'users', followerUID);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          return docSnap.data();
+        } else {
+          return { uid: followerUID, name: 'Desconocido', photoURL: defaultAvatar };
+        }
+      })
+    );
+    setFollowersData(results);
+  };
+
+  const fetchFollowingInfo = async (following) => {
+    const results = await Promise.all(
+      following.map(async (followingUID) => {
+        const docRef = doc(db, 'users', followingUID);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          return docSnap.data();
+        } else {
+          return { uid: followingUID, name: 'Desconocido', photoURL: defaultAvatar };
+        }
+      })
+    );
+    setFollowingData(results);
+  };
+
   useEffect(() => {
     if (user) {
       fetchUserData();
       fetchPostsAndEventos();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (userData?.followers) {
+      fetchFollowersInfo(userData.followers);
+    }
+    if (userData?.following) {
+      fetchFollowingInfo(userData.following);
+    }
+  }, [userData?.followers, userData?.following]);
 
   const handleDeletePost = async (postUniqueId) => {
     try {
@@ -213,6 +260,43 @@ const MiPerfil = () => {
     setIsEditing(true);
   };
 
+  // Agrega este código antes del return o dentro de él, dependiendo de tu flujo de datos:
+  const [activities, setActivities] = useState([]);
+
+  // Genera un historial de actividad a partir de los posts y eventos (puedes ampliar esto para incluir comentarios u otras acciones)
+  useEffect(() => {
+    const activitiesFromPosts = posts.map(post => ({
+      id: post.uniqueId,
+      type: 'Proyecto',
+      action: 'creó un proyecto',
+      date: post.fechaCreacion, // se asume que existe
+      description: post.nombre
+    }));
+    const activitiesFromEvents = eventos.map(evt => ({
+      id: evt.uniqueId,
+      type: 'Evento',
+      action: 'creó un evento',
+      date: evt.fechaCreacion, // se asume que existe
+      description: evt.nombre
+    }));
+    const allActivities = [...activitiesFromPosts, ...activitiesFromEvents];
+    // Orden descendente (lo más reciente primero)
+    allActivities.sort((a, b) => {
+      const dateA = a.date ? new Date(a.date.seconds * 1000) : 0;
+      const dateB = b.date ? new Date(b.date.seconds * 1000) : 0;
+      return dateB - dateA;
+    });
+    setActivities(allActivities);
+  }, [posts, eventos]);
+
+  const totalLikes = posts.reduce((sum, post) => sum + (post.likes ? post.likes.length : 0), 0);
+  const sortedPosts = [...posts].sort((a, b) => {
+    const dateA = a.fechaCreacion ? new Date(a.fechaCreacion.seconds * 1000) : 0;
+    const dateB = b.fechaCreacion ? new Date(b.fechaCreacion.seconds * 1000) : 0;
+    return dateB - dateA;
+  });
+  const lastActivity = sortedPosts.length > 0 ? sortedPosts[0].fechaCreacion : null;
+
   if (loading) return <p>Cargando...</p>;
   if (!user) return <p style={{ padding: '2rem' }}>No estás autenticado.</p>;
 
@@ -309,7 +393,7 @@ const MiPerfil = () => {
               <strong>Sobre mi:</strong> {userData?.bio || '¡Habla un poco sobre ti!'}
             </p>
             <p>
-              <strong>GitHub</strong> {userData?.github ? (
+              <strong>GitHub:</strong> {userData?.github ? (
                 <a
                   href={userData.github}
                   target="_blank"
@@ -320,6 +404,18 @@ const MiPerfil = () => {
                 </a>
               ) : 'Ninguno'}
             </p>
+            {/* Nuevo bloque para seguidores y seguidos */}
+            <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-around', width: '100%' }}>
+              <div style={{ cursor: 'pointer' }} onClick={() => setShowFollowersModal(true)}>
+                <h4>{userData?.followers?.length || 0}</h4>
+                <p>Seguidores</p>
+              </div>
+              <div style={{ cursor: 'pointer' }} onClick={() => setShowFollowingModal(true)}>
+                <h4>{userData?.following?.length || 0}</h4>
+                <p>Siguiendo</p>
+              </div>
+            </div>
+            {/* Botón para editar */}
             {!isEditing ? (
               <button
                 onClick={handleEdit}
@@ -379,7 +475,6 @@ const MiPerfil = () => {
                     marginTop: '1rem'
                   }}
                 >
-
                   Guardar cambios
                 </button>
               </div>
@@ -665,6 +760,38 @@ const MiPerfil = () => {
         </div>
       </div>
 
+      <div className="profile-stats" style={{
+        backgroundColor: '#1c2833',
+        color: '#fff',
+        padding: '1rem',
+        borderRadius: '8px',
+        margin: '1rem 2rem',
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '2rem'
+      }}>
+        <div>
+          <h4>{posts.length}</h4>
+          <p>Proyectos publicados</p>
+        </div>
+        <div>
+          <h4>{totalLikes}</h4>
+          <p>Total de likes</p>
+        </div>
+        <div>
+          <h4>
+            {lastActivity 
+                ? new Date(lastActivity.seconds * 1000).toLocaleDateString('es-ES', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                  }) 
+                : 'N/A'}
+          </h4>
+          <p>Última actividad</p>
+        </div>
+      </div>
+
       {/* Modal de edición de proyecto */}
       {isEditingPost && (
         <div style={{
@@ -721,8 +848,8 @@ const MiPerfil = () => {
               <label style={{ display: 'block', marginBottom: '0.5rem' }}>Características:</label>
               <input
                 type="text"
-                name="caracteristicas"
-                value={editedPost.caracteristicas || ''}
+                name="fechaFin"
+                value={editedPost.fechaFin}
                 onChange={handleChangePost}
                 style={{ width: '100%', padding: '0.5rem', borderRadius: '5px', border: '1px solid #ccc' }}
               />
@@ -887,6 +1014,210 @@ const MiPerfil = () => {
                 Guardar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      <div className="timeline-container" style={{
+          backgroundColor: '#1c2833',
+          color: '#fff',
+          padding: '1rem',
+          borderRadius: '8px',
+          margin: '1rem 2rem'
+      }}>
+        <h4 style={{ textAlign: 'center', marginBottom: '1rem' }}>Historial de Actividad</h4>
+        <div className="timeline" style={{
+            position: 'relative',
+            marginLeft: '20px'
+        }}>
+          {activities.length > 0 ? activities.map(activity => (
+            <div key={activity.id} className="timeline-item" style={{
+                position: 'relative',
+                paddingLeft: '20px',
+                marginBottom: '1rem'
+            }}>
+              {/* Línea de la timeline */}
+              <div style={{
+                position: 'absolute',
+                left: '0',
+                top: '0',
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                backgroundColor: '#8a2be2',
+                border: '2px solid #fff'
+              }}></div>
+              <div style={{ fontSize: '0.9rem' }}>
+                <strong>{activity.action}</strong> <em>({activity.type})</em>
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#ccc' }}>
+                {activity.date
+                  ? new Date(activity.date.seconds * 1000).toLocaleString('es-ES', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })
+                  : 'Sin fecha'}
+              </div>
+            </div>
+          )) : (
+            <p style={{ textAlign: 'center' }}>No hay actividad registrada.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Modal de Seguidores */}
+      {showFollowersModal && (
+        <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+        }}>
+          <div style={{
+              backgroundColor: '#f5f5f5',
+              padding: '2rem',
+              borderRadius: '10px',
+              width: '90%',
+              maxWidth: '500px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+          }}>
+            <h3 style={{ textAlign: 'center', marginBottom: '1rem' }}>Seguidores</h3>
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              {followersData.length > 0 ? (
+                followersData.map(follower => (
+                  <div key={follower.uid} 
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.5rem',
+                      borderBottom: '1px solid #ddd',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowFollowersModal(false);
+                      navigate(`/perfil/${follower.uid}`);
+                    }}>
+                    <img 
+                      src={follower.photoURL || defaultAvatar} 
+                      alt={follower.name}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        marginRight: '1rem'
+                      }}
+                    />
+                    <span style={{ fontSize: '1rem', color: '#333' }}>
+                      {follower.name}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p style={{ textAlign: 'center' }}>No tienes seguidores.</p>
+              )}
+            </div>
+            <button
+              onClick={() => setShowFollowersModal(false)}
+              style={{
+                marginTop: '1rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#8a2be2',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'block',
+                marginLeft: 'auto',
+                marginRight: 'auto'
+              }}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Siguiendo */}
+      {showFollowingModal && (
+        <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+        }}>
+          <div style={{
+              backgroundColor: '#f5f5f5',
+              padding: '2rem',
+              borderRadius: '10px',
+              width: '90%',
+              maxWidth: '500px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+          }}>
+            <h3 style={{ textAlign: 'center', marginBottom: '1rem' }}>Siguiendo</h3>
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              {followingData.length > 0 ? (
+                followingData.map(person => (
+                  <div key={person.uid} 
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.5rem',
+                      borderBottom: '1px solid #ddd',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowFollowingModal(false);
+                      navigate(`/perfil/${person.uid}`);
+                    }}>
+                    <img 
+                      src={person.photoURL || defaultAvatar} 
+                      alt={person.name}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        marginRight: '1rem'
+                      }}
+                    />
+                    <span style={{ fontSize: '1rem', color: '#333' }}>
+                      {person.name}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p style={{ textAlign: 'center' }}>No sigues a nadie.</p>
+              )}
+            </div>
+            <button
+              onClick={() => setShowFollowingModal(false)}
+              style={{
+                marginTop: '1rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#8a2be2',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'block',
+                marginLeft: 'auto',
+                marginRight: 'auto'
+              }}
+            >
+              Cerrar
+            </button>
           </div>
         </div>
       )}
