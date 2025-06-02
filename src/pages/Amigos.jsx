@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/useAuth';
@@ -13,6 +13,146 @@ const formatDate = (timestamp) => {
     return new Date(timestamp.seconds * 1000).toLocaleString();
   }
   return new Date(timestamp).toLocaleString();
+};
+
+const PostCard = ({ post, currentUser }) => {
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+
+  // Escucha en tiempo real los comentarios asociados a la publicación
+  useEffect(() => {
+    const q = query(
+      collection(db, 'comentarios'),
+      where('postId', '==', post.id)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const commentsData = [];
+      snapshot.forEach((doc) => {
+        commentsData.push({ id: doc.id, ...doc.data() });
+      });
+      setComments(commentsData);
+    });
+    return () => unsubscribe();
+  }, [post.id]);
+
+  const handleAddComment = async () => {
+    if (newComment.trim() === '') return;
+    try {
+      await addDoc(collection(db, 'comentarios'), {
+        postId: post.id,
+        autorId: currentUser.uid,
+        autorNombre: currentUser.name,
+        autorFoto: currentUser.photoURL || defaultAvatar,
+        texto: newComment,
+        createdAt: new Date()
+      });
+      setNewComment('');
+    } catch (err) {
+      console.error('Error al agregar comentario:', err);
+    }
+  };
+
+  return (
+    <div
+      key={post.id}
+      className="post-card bg-white shadow-md rounded-2xl p-5 mb-6"
+      style={{ maxWidth: '568px', marginInline: 'auto' }}
+    >
+      <div className="post-header flex items-center mb-4">
+        <img 
+          src={post.autorFoto || defaultAvatar} 
+          alt="Avatar" 
+          style={{ width: '40px', height: '40px' }} 
+          className="rounded-full object-cover"
+        />
+        <div className="ml-3 flex items-center">
+          <h4 className="font-bold text-lg text-gray-800" style={{ margin: 0 }}>
+            {post.autorNombre || 'Sin nombre'}
+          </h4>
+          {post.autorId !== currentUser.uid && (
+            <div className="ml-2">
+              <FollowButton targetUid={post.autorId} />
+            </div>
+          )}
+        </div>
+      </div>
+      <div
+        className="post-content text-gray-700 space-y-2"
+        style={{ textAlign: 'left', fontSize: '0.9rem' }}
+      >
+        {post.tipo === 'proyecto' && (
+          <>
+            <p>
+              <strong>Nombre:</strong> {post.nombre || 'Sin Nombre'}
+            </p>
+            <p>
+              <strong>Descripción:</strong> {post.descripcion || 'Sin descripción'}
+            </p>
+            <p>
+              <strong>Características:</strong> {post.caracteristicas || 'No especificadas'}
+            </p>
+            <p>
+              <strong>Herramientas:</strong> {post.herramientas || 'No especificadas'}
+            </p>
+            <p>
+              <strong>Fecha de Inicio:</strong> {post.fechaInicio ? formatDate(post.fechaInicio) : 'No especificada'}
+            </p>
+            <p>
+              <strong>Fecha de Fin:</strong> {post.fechaFin ? formatDate(post.fechaFin) : 'No especificada'}
+            </p>
+          </>
+        )}
+        {post.tipo === 'evento' && (
+          <>
+            <p>
+              <strong>Nombre:</strong> {post.nombre || 'No especificada'}
+            </p>
+            <p>
+              <strong>Descripción:</strong> {post.descripcion || 'No especificada'}
+            </p>
+            <p>
+              <strong>Ciudad:</strong> {post.ciudad || 'No especificada'}
+            </p>
+            <p>
+              <strong>País:</strong> {post.pais || 'No especificado'}
+            </p>
+            <p>
+              <strong>Dirección:</strong> {post.direccion || 'No especificada'}
+            </p>
+            <p>
+              <strong>Propósito:</strong> {post.proposito || 'No especificado'}
+            </p>
+            <p>
+              <strong>Fecha del Evento:</strong> {post.fechaEvento ? formatDate(post.fechaEvento) : 'No especificada'}
+            </p>
+            <p>
+              <strong>Hora del Evento:</strong> {post.horaEvento || 'No especificada'}
+            </p>
+          </>
+        )}
+      </div>
+      {/* Sección de comentarios */}
+      <div className="comments-section mt-4">
+        {comments.map((comment) => (
+          <div key={comment.id} style={{ marginTop: '0.5rem', padding: '0.5rem', backgroundColor: '#f0f0f0', borderRadius: '5px' }}>
+            <strong>{comment.autorNombre}: </strong> {comment.texto}
+          </div>
+        ))}
+        <div style={{ display: 'flex', marginTop: '1rem' }}>
+          <input 
+            type="text" 
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Agrega un comentario"
+            style={{ flex: 1, padding: '0.5rem' }}
+          />
+          <button onClick={handleAddComment} style={{ padding: '0.5rem 1rem' }}>
+            Enviar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const Amigos = () => {
@@ -113,87 +253,8 @@ const Amigos = () => {
       {posts.length === 0 ? (
         <p style={{ textAlign: 'center' }}>No hay publicaciones de tus amigos.</p>
       ) : (
-        posts.map((post) => (
-          <div
-            key={post.id}
-            className="post-card bg-white shadow-md rounded-2xl p-5 mb-6"
-            style={{ maxWidth: '568px', marginInline: 'auto' }}
-          >
-            <div className="post-header flex items-center mb-4">
-              <img 
-                src={post.autorFoto || defaultAvatar} 
-                alt="Avatar" 
-                style={{ width: '40px', height: '40px' }} 
-                className="rounded-full object-cover"
-              />
-              <div className="ml-3 flex items-center">
-                <h4 className="font-bold text-lg text-gray-800" style={{ margin: 0 }}>
-                  {post.autorNombre || 'Sin nombre'}
-                </h4>
-                {post.autorId !== user.uid && (
-                  <div className="ml-2">
-                    <FollowButton targetUid={post.autorId} />
-                  </div>
-                )}
-              </div>
-            </div>
-            <div
-              className="post-content text-gray-700 space-y-2"
-              style={{ textAlign: 'left', fontSize: '0.9rem' }}
-            >
-              {post.tipo === 'proyecto' && (
-                <>
-                <p>
-                    <strong>Nombre:</strong> {post.nombre || 'Sin Nombre'}
-                  </p>
-                  <p>
-                    <strong>Descripción:</strong> {post.descripcion || 'Sin descripción'}
-                  </p>
-                  <p>
-                    <strong>Características:</strong> {post.caracteristicas || 'No especificadas'}
-                  </p>
-                  <p>
-                    <strong>Herramientas:</strong> {post.herramientas || 'No especificadas'}
-                  </p>
-                  <p>
-                    <strong>Fecha de Inicio:</strong> {post.fechaInicio ? formatDate(post.fechaInicio) : 'No especificada'}
-                  </p>
-                  <p>
-                    <strong>Fecha de Fin:</strong> {post.fechaFin ? formatDate(post.fechaFin) : 'No especificada'}
-                  </p>
-                </>
-              )}
-              {post.tipo === 'evento' && (
-                <>
-                <p>
-                    <strong>Nombre:</strong> {post.nombre || 'No especificada'}
-                  </p>
-                  <p>
-                    <strong>Descripción:</strong> {post.descripcion || 'No especificada'}
-                  </p>
-                  <p>
-                    <strong>Ciudad:</strong> {post.ciudad || 'No especificada'}
-                  </p>
-                  <p>
-                    <strong>País:</strong> {post.pais || 'No especificado'}
-                  </p>
-                  <p>
-                    <strong>Dirección:</strong> {post.direccion || 'No especificada'}
-                  </p>
-                  <p>
-                    <strong>Propósito:</strong> {post.proposito || 'No especificado'}
-                  </p>
-                  <p>
-                    <strong>Fecha del Evento:</strong> {post.fechaEvento ? formatDate(post.fechaEvento) : 'No especificada'}
-                  </p>
-                  <p>
-                    <strong>Hora del Evento:</strong> {post.horaEvento || 'No especificada'}
-                  </p>
-                </>
-              )}
-            </div>
-            {/* Aquí puedes agregar botones o acciones adicionales */}
-          </div>
+        posts.map(post => (
+          <PostCard key={post.id} post={post} currentUser={user} />
         ))
       )}
     </Layout>
