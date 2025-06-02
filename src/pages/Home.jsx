@@ -19,8 +19,7 @@ import {
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Layout from '../components/Layout';
-import { FaHeart, FaRegHeart, FaStar, FaRegStar, FaBell } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { FaHeart, FaRegHeart, FaStar, FaRegStar, FaBell, FaCommentDots } from 'react-icons/fa'; import { useNavigate } from 'react-router-dom';
 import FollowButton from '../components/FollowButton';  // Asegúrate de importarlo
 
 const Home = ({ searchQuery = "", ...props }) => {
@@ -41,7 +40,60 @@ const Home = ({ searchQuery = "", ...props }) => {
     const [pendingReaction, setPendingReaction] = useState(null);
     //const [searchQuery, setSearchQuery] = useState("");
     const [expandedProjectId, setExpandedProjectId] = useState(null);
+    const [commentInputs, setCommentInputs] = useState({});
+    const [activeCommentProject, setActiveCommentProject] = useState(null);
+    const [commentsByProject, setCommentsByProject] = useState({});
 
+    useEffect(() => {
+        const qComments = query(
+            collection(db, "comentarios"),
+            orderBy("createdAt", "asc")
+        );
+        const unsubscribeComments = onSnapshot(qComments, (snapshot) => {
+            const commentsObj = {};
+            snapshot.docs.forEach(docSnap => {
+                const data = docSnap.data();
+                const projectId = data.projectId;
+                if (!commentsObj[projectId]) {
+                    commentsObj[projectId] = [];
+                }
+                commentsObj[projectId].push({ id: docSnap.id, ...data });
+            });
+            setCommentsByProject(commentsObj);
+        });
+        return () => unsubscribeComments();
+    }, []);
+    const handleCommentChange = (projectId, value) => {
+        setCommentInputs(prev => ({ ...prev, [projectId]: value }));
+    };
+const formatCommentTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    if(diffInMinutes < 60) return `${diffInMinutes} min`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if(diffInHours < 24) return `${diffInHours} h`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} d`;
+};
+    const handleCommentSubmit = async (project) => {
+        const commentText = commentInputs[project.id];
+        if (!commentText || commentText.trim() === "") return;
+        try {
+            await addDoc(collection(db, "comentarios"), {
+                projectId: project.id,
+                comment: commentText,
+                authorId: user.uid,
+                authorName: user.displayName,
+                createdAt: serverTimestamp()
+            });
+            setCommentInputs(prev => ({ ...prev, [project.id]: "" }));
+        } catch (err) {
+            console.error("Error al enviar el comentario:", err);
+            alert("Error al enviar el comentario, intenta nuevamente.");
+        }
+    };
     const initialFormData = {
         nombre: '',
         descripcion: '',
@@ -345,19 +397,19 @@ const Home = ({ searchQuery = "", ...props }) => {
         setExpandedProjectId(prev => (prev === id ? null : id));
     };
 
-    
+
     // FILTRADO CORREGIDO
     const filteredProjects = projects.filter(project => {
         // Si el campo de búsqueda está vacío, se muestran todos los proyectos
         if (!searchQuery || searchQuery.trim() === "") return true;
-        
+
         const query = searchQuery.trim().toLowerCase();
-        
+
         // Preparar los campos para la búsqueda
         const nombre = (project.nombre || '').toLowerCase();
         const descripcion = (project.descripcion || '').toLowerCase();
         const autorNombre = (project.autorNombre || '').toLowerCase();
-        
+
         // Manejar etiquetas (pueden ser string o array)
         let etiquetas = '';
         if (project.etiquetas) {
@@ -367,14 +419,14 @@ const Home = ({ searchQuery = "", ...props }) => {
                 etiquetas = project.etiquetas.toLowerCase();
             }
         }
-        
+
         // Verificar si la consulta coincide con algún campo
-        return nombre.includes(query) || 
-               descripcion.includes(query) || 
-               autorNombre.includes(query) || 
-               etiquetas.includes(query);
+        return nombre.includes(query) ||
+            descripcion.includes(query) ||
+            autorNombre.includes(query) ||
+            etiquetas.includes(query);
     });
-    
+
     console.log("Proyectos filtrados:", filteredProjects);
     console.log("Search query actual:", searchQuery);
     return (
@@ -768,7 +820,9 @@ const Home = ({ searchQuery = "", ...props }) => {
                                 )}
 
                                 {/* Botones de Me Gusta y Favorito alineados a la derecha */}
-                                <div className="like-fav-buttons flex gap-4 items-center">
+                                <div className="like-fav-buttons flex flex-row items-center gap-4">
+                                   
+                                    {/* Botón de Me Gusta */}
                                     <button
                                         className={`btn-like ${liked ? 'active' : ''}`}
                                         onClick={() => toggleReaction(project.id, 'like', project.tipo)}
@@ -776,6 +830,7 @@ const Home = ({ searchQuery = "", ...props }) => {
                                         {liked ? <FaHeart /> : <FaRegHeart />}
                                         <span>{project.likes?.length || 0}</span>
                                     </button>
+                                    {/* Botón de Favoritos */}
                                     <button
                                         className={`btn-fav ${favorited ? 'active' : ''}`}
                                         onClick={() => toggleReaction(project.id, 'favorite', project.tipo)}
@@ -783,8 +838,107 @@ const Home = ({ searchQuery = "", ...props }) => {
                                         {favorited ? <FaStar /> : <FaRegStar />}
                                         <span>{project.favorites?.length || 0}</span>
                                     </button>
+                                     {/* Botón de Comentario */}
+                                    <button
+                                        className="btn-comment"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveCommentProject(project.id === activeCommentProject ? null : project.id);
+                                        }}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            color: '#8A2BE2',
+                                            fontSize: '1.5rem'
+                                        }}
+                                    >
+                                        <FaCommentDots />
+                                        <span style={{ marginLeft: '4px', fontSize: '1rem' }}>
+                                            {commentsByProject[project.id]?.length || 0}
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
+                            {project.isPublic && !user.isAnonymous && activeCommentProject === project.id && (
+                                <div
+                                    className="comments-section"
+                                    onClick={(e) => e.stopPropagation()}
+                                    style={{ marginTop: '1rem' }}
+                                >
+                                    <div className="comment-input" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <img
+                                            src={user?.photoURL || defaultAvatar}
+                                            alt="Avatar"
+                                            className="comment-user-avatar"
+                                            style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Comentar"
+                                            value={commentInputs[project.id] || ""}
+                                            onChange={(e) => handleCommentChange(project.id, e.target.value)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="comment-text-input"
+                                            style={{
+                                                flex: 1,
+                                                padding: '0.5rem',
+                                                borderRadius: '20px',
+                                                border: '1px solid #ccc',
+                                                outline: 'none'
+                                            }}
+                                        />
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleCommentSubmit(project);
+                                            }}
+                                            className="comment-submit"
+                                            style={{
+                                                padding: '0.5rem 1rem',
+                                                backgroundColor: '#8a2be2',
+                                                color: '#fff',
+                                                border: 'none',
+                                                borderRadius: '20px',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            Publicar
+                                        </button>
+                                    </div>
+                                    {/* NUEVO: Lista de comentarios con estilo tipo "burbuja" */}
+                                    <div className="comments-list" style={{ marginTop: '0.5rem' }}>
+                                        {commentsByProject[project.id] && commentsByProject[project.id].map(comment => (
+                                            <div
+                                                key={comment.id}
+                                                className="comment-item"
+                                                style={{
+                                                    backgroundColor: '#f0f2f5',
+                                                    padding: '0.5rem 1rem',
+                                                    borderRadius: '999px',
+                                                    marginBottom: '0.5rem',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    maxWidth: '80%'
+                                                }}
+                                            >
+                                                <span className="comment-user-name" style={{ fontWeight: 'bold', marginRight: '0.5rem' }}>
+                                                    {comment.authorName}:
+                                                </span>
+                                                <span className="comment-text" style={{ marginRight: '0.5rem' }}>
+                                                    {comment.comment}
+                                                </span>
+                                                <span className="comment-time" style={{ fontSize: '0.75rem', color: '#999' }}>
+                                                    {formatCommentTime(comment.createdAt)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
