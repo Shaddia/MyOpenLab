@@ -3,6 +3,7 @@ import '../styles/home.css';
 import defaultAvatar from '../assets/default-avatar.png'; // Ajusta la ruta si es distinta
 import { createNotification } from '../services/notificaciones';
 import { useAuth } from '../context/useAuth';
+import { getProjectCategory } from '../utils/projectCategory';
 import { db } from '../services/firebase';
 import {
     collection,
@@ -18,11 +19,12 @@ import {
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Layout from '../components/Layout';
-import { FaHeart, FaRegHeart, FaStar, FaRegStar } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaStar, FaRegStar, FaBell } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import FollowButton from '../components/FollowButton';  // Asegúrate de importarlo
 
-const Home = () => {
+const Home = ({ searchQuery = "", ...props }) => {
+    console.log("Valor recibido de searchQuery:", searchQuery);
     const { user } = useAuth();
     const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
@@ -37,9 +39,10 @@ const Home = () => {
     const [deleteId, setDeleteId] = useState(null);
     const [protectedPopup, setProtectedPopup] = useState(false);
     const [pendingReaction, setPendingReaction] = useState(null);
+    //const [searchQuery, setSearchQuery] = useState("");
     const [expandedProjectId, setExpandedProjectId] = useState(null);
 
-    const [formData, setFormData] = useState({
+    const initialFormData = {
         nombre: '',
         descripcion: '',
         caracteristicas: '',
@@ -49,15 +52,26 @@ const Home = () => {
         ciudad: '',
         pais: '',
         direccion: '',
-        proposito: ''
-    });
-
+        proposito: '',
+        etiquetas: '',    // NUEVO: etiquetas
+        publico: true,     // NUEVO: bandera de visibilidad (true = público, false = privado)
+        github: '',       // Enlace del repositorio (opcional)
+        videoDemo: '',    // Enlace del video demo (opcional)
+        otrosEnlaces: ''  // Otros enlaces opcionales
+    }
+    const [formData, setFormData] = useState(initialFormData);
+    // 4. Al obtener los proyectos, filtra para que solo se muestren los documentos públicos o los privados del propio usuario.
     useEffect(() => {
         const qProyectos = query(collection(db, 'proyectos'), orderBy('fechaCreacion', 'desc'));
 
         const unsubscribeProyectos = onSnapshot(qProyectos, async (snapshotProyectos) => {
-            const proyectos = snapshotProyectos.docs.map((doc) => ({ id: doc.id, tipo: 'proyecto', ...doc.data() }));
+            const proyectos = snapshotProyectos.docs
+                .map((doc) => ({ id: doc.id, tipo: 'proyecto', ...doc.data() }))
+                .filter(project => (
+                    !project.deleted && project.isPublic === true
+                ));
             setProjects(proyectos);
+            // Código que obtiene datos de los usuarios...
 
             const newUsersData = { ...usersData };
             for (const project of proyectos) {
@@ -98,7 +112,9 @@ const Home = () => {
             ciudad: '',
             pais: '',
             direccion: '',
-            proposito: ''
+            proposito: '',
+            etiquetas: '',
+            publico: false  // Asegura que siempre tenga un valor
         });
         setArchivo(null);
         setOriginalArchivoUrl(null); // Limpiar la URL original
@@ -131,7 +147,8 @@ const Home = () => {
             direccion,
             fechaEvento,
             horaEvento,
-            proposito
+            proposito,
+            etiquetas // NUEVO: etiquetas
         } = formData;
 
         if (!tipoPublicacion) {
@@ -156,7 +173,7 @@ const Home = () => {
         let archivoUrl = null;
 
         if (archivo) {
-            const storage = getStorage(); // ¡Esto es importante!
+            const storage = getStorage();
             const archivoRef = ref(storage, `archivos/${Date.now()}_${archivo.name}`);
             try {
                 await uploadBytes(archivoRef, archivo);
@@ -168,9 +185,24 @@ const Home = () => {
                 return;
             }
         } else if (editingProjectId) {
-            // Conserva la URL original si no se selecciona un nuevo archivo al editar
             archivoUrl = originalArchivoUrl;
         }
+
+        // --- Nuevo: Determinar categoría automática ---
+        let keywords = [];
+        if (etiquetas) {
+            keywords.push(...etiquetas.split(',').map(tag => tag.trim()));
+        }
+        if (descripcion) {
+            const textKeywords = descripcion
+                .toLowerCase()
+                .replace(/[^\w\s]/g, '') // eliminar signos de puntuación
+                .split(/\s+/)
+                .filter(word => word.length > 3); // evita palabras muy cortas
+            keywords.push(...textKeywords);
+        }
+        const category = getProjectCategory(keywords);
+        // --------------------------------------------------
 
         const data = {
             ...formData,
@@ -180,6 +212,8 @@ const Home = () => {
             fechaCreacion: serverTimestamp(),
             likes: [],
             favorites: [],
+            category, // Categoría automática calculada
+            isPublic: formData.publico   // Guardamos la visibilidad como "isPublic"
         };
 
         try {
@@ -188,16 +222,13 @@ const Home = () => {
                     await updateDoc(doc(db, 'proyectos', editingProjectId), data);
                     console.log("Proyecto actualizado");
                 } else {
-                     // Con addDoc se genera automáticamente un id único
-        const docRef = await addDoc(collection(db, 'proyectos'), data);
-        console.log("Proyecto creado con ID:", docRef.id);
+                    const docRef = await addDoc(collection(db, 'proyectos'), data);
+                    console.log("Proyecto creado con ID:", docRef.id);
                 }
             } else if (tipoPublicacion === 'evento') {
-                 // Se usa addDoc para eventos también
-      const docRef = await addDoc(collection(db, 'eventos'), data);
-      console.log("Evento creado con ID:", docRef.id);
+                const docRef = await addDoc(collection(db, 'eventos'), data);
+                console.log("Evento creado con ID:", docRef.id);
             }
-
             handleClosePopup();
         } catch (err) {
             console.error('Error al guardar la publicación:', err);
@@ -233,7 +264,9 @@ const Home = () => {
 
     const confirmDelete = async () => {
         try {
-            await deleteDoc(doc(db, 'proyectos', deleteId));
+            // Actualiza el campo "deleted" a true para hacer soft delete
+            //await deleteDoc(doc(db, 'proyectos', deleteId)); Entonces en vez de eliminar, actualiza el campo deleted
+            await updateDoc(doc(db, 'proyectos', deleteId), { deleted: true });
             setShowDeletePopup(false);
             setDeleteId(null);
         } catch (err) {
@@ -247,40 +280,40 @@ const Home = () => {
         setDeleteId(null);
     };
 
-   // Dentro de Home.jsx, reemplaza o modifica toggleReaction:
-const toggleReactionProtected = async (id, type, pubTipo) => {
-  const collectionName = pubTipo === 'evento' ? 'eventos' : 'proyectos';
-  const projectRef = doc(db, collectionName, id);
-  const projectSnap = await getDoc(projectRef);
-  if (!projectSnap.exists()) return;
-  const projectData = projectSnap.data();
-  const field = type === 'like' ? 'likes' : 'favorites';
-  const currentReactions = projectData[field] || [];
-  const alreadyReacted = currentReactions.includes(user.uid);
-  const updatedReactions = alreadyReacted
-    ? currentReactions.filter(uid => uid !== user.uid)
-    : [...currentReactions, user.uid];
-  await updateDoc(projectRef, { [field]: updatedReactions });
-  if (!alreadyReacted && projectData.autorId !== user.uid) {
-    await createNotification({
-      type: type, // "like" o "favorite"
-      from: user.uid,
-      fromName: user.displayName,
-      to: projectData.autorId,
-      postName: projectData.nombre || projectData.titulo || 'tu publicación'
-    });
-  }
-};
+    // Dentro de Home.jsx, reemplaza o modifica toggleReaction:
+    const toggleReactionProtected = async (id, type, pubTipo) => {
+        const collectionName = pubTipo === 'evento' ? 'eventos' : 'proyectos';
+        const projectRef = doc(db, collectionName, id);
+        const projectSnap = await getDoc(projectRef);
+        if (!projectSnap.exists()) return;
+        const projectData = projectSnap.data();
+        const field = type === 'like' ? 'likes' : 'favorites';
+        const currentReactions = projectData[field] || [];
+        const alreadyReacted = currentReactions.includes(user.uid);
+        const updatedReactions = alreadyReacted
+            ? currentReactions.filter(uid => uid !== user.uid)
+            : [...currentReactions, user.uid];
+        await updateDoc(projectRef, { [field]: updatedReactions });
+        if (!alreadyReacted && projectData.autorId !== user.uid) {
+            await createNotification({
+                type: type, // "like" o "favorite"
+                from: user.uid,
+                fromName: user.displayName,
+                to: projectData.autorId,
+                postName: projectData.nombre || projectData.titulo || 'tu publicación'
+            });
+        }
+    };
 
-const toggleReaction = (id, type, pubTipo) => {
-  if (user.isAnonymous) {
-    // En lugar de redirigir inmediatamente, mostramos el pop-up
-    setProtectedPopup(true);
-    setPendingReaction(() => () => toggleReactionProtected(id, type, pubTipo));
-    return;
-  }
-  toggleReactionProtected(id, type, pubTipo);
-};
+    const toggleReaction = (id, type, pubTipo) => {
+        if (user.isAnonymous) {
+            // En lugar de redirigir inmediatamente, mostramos el pop-up
+            setProtectedPopup(true);
+            setPendingReaction(() => () => toggleReactionProtected(id, type, pubTipo));
+            return;
+        }
+        toggleReactionProtected(id, type, pubTipo);
+    };
 
     const formatDate = (timestamp) => {
         if (!timestamp) return '';
@@ -312,11 +345,52 @@ const toggleReaction = (id, type, pubTipo) => {
         setExpandedProjectId(prev => (prev === id ? null : id));
     };
 
+    
+    // FILTRADO CORREGIDO
+    const filteredProjects = projects.filter(project => {
+        // Si el campo de búsqueda está vacío, se muestran todos los proyectos
+        if (!searchQuery || searchQuery.trim() === "") return true;
+        
+        const query = searchQuery.trim().toLowerCase();
+        
+        // Preparar los campos para la búsqueda
+        const nombre = (project.nombre || '').toLowerCase();
+        const descripcion = (project.descripcion || '').toLowerCase();
+        const autorNombre = (project.autorNombre || '').toLowerCase();
+        
+        // Manejar etiquetas (pueden ser string o array)
+        let etiquetas = '';
+        if (project.etiquetas) {
+            if (Array.isArray(project.etiquetas)) {
+                etiquetas = project.etiquetas.join(' ').toLowerCase();
+            } else {
+                etiquetas = project.etiquetas.toLowerCase();
+            }
+        }
+        
+        // Verificar si la consulta coincide con algún campo
+        return nombre.includes(query) || 
+               descripcion.includes(query) || 
+               autorNombre.includes(query) || 
+               etiquetas.includes(query);
+    });
+    
+    console.log("Proyectos filtrados:", filteredProjects);
+    console.log("Search query actual:", searchQuery);
     return (
         <Layout>
-            <div className="top-bar">
+            <div className="top-bar" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+            }}>
                 <h2 className="section-title">Publicaciones</h2>
-                <div className="underline" />
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}>
+                </div>
             </div>
 
             <div
@@ -381,7 +455,7 @@ const toggleReaction = (id, type, pubTipo) => {
                                 value={tipoPublicacion}
                                 onChange={(e) => {
                                     setTipoPublicacion(e.target.value);
-                                    setFormData({}); // Limpiar campos al cambiar
+                                    setFormData(initialFormData); // Reset con valores predeterminados
                                 }}
                             >
                                 <option value="">Seleccionar opción</option>
@@ -401,7 +475,65 @@ const toggleReaction = (id, type, pubTipo) => {
                                     <label>Fecha de finalización:</label>
                                     <input type="date" name="fechaFin" value={formData.fechaFin} onChange={handleInputChange} required />
 
-                                    <label>Archivo multimedia (opcional):</label>
+                                    {/* NUEVO: Etiquetas */}
+                                    <input
+                                        name="etiquetas"
+                                        placeholder="Etiquetas (separadas por comas)"
+                                        value={formData.etiquetas}
+                                        onChange={handleInputChange}
+                                    />
+                                    {/* Nuevos campos opcionales para enlaces */}
+                                    <input
+                                        name="github"
+                                        placeholder="Enlace de GitHub (opcional)"
+                                        value={formData.github}
+                                        onChange={handleInputChange}
+                                    />
+                                    <input
+                                        name="videoDemo"
+                                        placeholder="Enlace de Video Demo (opcional)"
+                                        value={formData.videoDemo}
+                                        onChange={handleInputChange}
+                                    />
+                                    <input
+                                        name="otrosEnlaces"
+                                        placeholder="Otros enlaces (opcional)"
+                                        value={formData.otrosEnlaces}
+                                        onChange={handleInputChange}
+                                    />
+
+                                    {/* NUEVO: Público */}
+                                    <label style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginTop: '0.5rem',
+                                        padding: '6px 12px',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#f6f6f6',
+                                        maxWidth: '220px',
+                                        cursor: 'pointer'
+                                    }}>
+                                        <span style={{ fontSize: '0.9rem', color: '#333' }}>
+                                            Visible para todos
+                                        </span>
+                                        <input
+                                            type="checkbox"
+                                            name="publico"
+                                            checked={formData.publico}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, publico: e.target.checked }))}
+                                            style={{
+                                                appearance: 'none',
+                                                width: '20px',
+                                                height: '20px',
+                                                border: `2px solid ${formData.publico ? '#8a2be2' : '#aaa'}`,
+                                                borderRadius: '4px',
+                                                backgroundColor: formData.publico ? '#8a2be2' : '#fff',
+                                                transition: 'all 0.2s ease',
+                                                cursor: 'pointer'
+                                            }}
+                                        />
+                                    </label>
                                     <input type="file" accept="image/*,video/*" onChange={handleArchivoChange} />
                                 </>
                             )}
@@ -414,6 +546,26 @@ const toggleReaction = (id, type, pubTipo) => {
                                     <input name="direccion" placeholder="Dirección del evento" value={formData.direccion} onChange={handleInputChange} required />
                                     <textarea name="descripcion" placeholder="Descripción" value={formData.descripcion} onChange={handleInputChange} required />
                                     <textarea name="proposito" placeholder="Propósito del evento (opcional)" value={formData.proposito} onChange={handleInputChange} />
+
+                                    {/* NUEVO: Etiquetas para eventos */}
+                                    <input
+                                        name="etiquetas"
+                                        placeholder="Etiquetas (separadas por comas)"
+                                        value={formData.etiquetas}
+                                        onChange={handleInputChange}
+                                    />
+
+                                    {/* NUEVO: Público (Para eventos también) */}
+                                    <label style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                                        <input
+                                            type="checkbox"
+                                            name="publico"
+                                            checked={formData.publico}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, publico: e.target.checked }))}
+                                            style={{ marginRight: '0.5rem' }}
+                                        />
+                                        Visible para todos
+                                    </label>
                                     <label>Fecha del evento:</label>
                                     <input type="date" name="fechaEvento" value={formData.fechaEvento} onChange={handleInputChange} required />
                                     <label>Hora del evento:</label>
@@ -449,9 +601,8 @@ const toggleReaction = (id, type, pubTipo) => {
 
 
             <div className="posts">
-                <h3>Publicaciones</h3>
-                {projects.length === 0 && <p>No hay proyectos aún.</p>}
-                {projects.map((project) => {
+                {filteredProjects.length === 0 && <p>No hay proyectos que coincidan con la búsqueda.</p>}
+                {filteredProjects.map((project) => {
                     const userInfo = usersData[project.autorId] || {};
                     const userPhoto = userInfo.photoURL || defaultAvatar;
                     const userName = userInfo.name || project.autorNombre || 'Usuario';
@@ -467,8 +618,8 @@ const toggleReaction = (id, type, pubTipo) => {
                             onClick={(e) => {
                                 // Evitamos que clicks en botones disparen la expansión.
                                 if (
-                                  e.target.tagName !== 'BUTTON' && 
-                                  (!e.target.parentElement || e.target.parentElement.tagName !== 'BUTTON')
+                                    e.target.tagName !== 'BUTTON' &&
+                                    (!e.target.parentElement || e.target.parentElement.tagName !== 'BUTTON')
                                 ) {
                                     toggleExpandProject(project.id);
                                 }
@@ -490,27 +641,27 @@ const toggleReaction = (id, type, pubTipo) => {
                                     />
                                 </div>
                                 <div className="author-info" style={{ display: 'flex', flexDirection: 'column' }}>
-  <div 
-    className="author-details" 
-    style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}
-  >
-    <h4 
-      className="font-bold text-lg text-gray-800" 
-      style={{ margin: 0, whiteSpace: 'nowrap' }}
-    >
-      {userName}
-    </h4>
-    {project.autorId !== user.uid && (
-      <FollowButton targetUid={project.autorId} />
-    )}
-  </div>
-  <p 
-    className="post-date text-gray-500" 
-    style={{ fontSize: '0.7rem', margin: 0 }}
-  >
-    {formatDate(project.fechaCreacion)}
-  </p>
-</div>
+                                    <div
+                                        className="author-details"
+                                        style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}
+                                    >
+                                        <h4
+                                            className="font-bold text-lg text-gray-800"
+                                            style={{ margin: 0, whiteSpace: 'nowrap' }}
+                                        >
+                                            {userName}
+                                        </h4>
+                                        {project.autorId !== user.uid && (
+                                            <FollowButton targetUid={project.autorId} />
+                                        )}
+                                    </div>
+                                    <p
+                                        className="post-date text-gray-500"
+                                        style={{ fontSize: '0.7rem', margin: 0 }}
+                                    >
+                                        {formatDate(project.fechaCreacion)}
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Se limita la altura si no está expandida, mostrando un resumen */}
@@ -562,6 +713,42 @@ const toggleReaction = (id, type, pubTipo) => {
                                                 alt="Archivo"
                                                 style={{ maxWidth: '100%', borderRadius: '12px', margin: '0 auto' }}
                                             />
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* NUEVO: Mostrar etiquetas */}
+                                {project.etiquetas && (
+                                    <p style={{ fontStyle: 'italic', color: '#666', marginTop: '0.5rem' }}>
+                                        {project.etiquetas}
+                                    </p>
+                                )}
+
+                                {(project.github || project.videoDemo || project.otrosEnlaces) && (
+                                    <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        {project.github && (
+                                            <div>
+                                                <strong>GitHub: </strong>
+                                                <a href={project.github} target="_blank" rel="noopener noreferrer">
+                                                    {project.github}
+                                                </a>
+                                            </div>
+                                        )}
+                                        {project.videoDemo && (
+                                            <div>
+                                                <strong>Video Demo: </strong>
+                                                <a href={project.videoDemo} target="_blank" rel="noopener noreferrer">
+                                                    {project.videoDemo}
+                                                </a>
+                                            </div>
+                                        )}
+                                        {project.otrosEnlaces && (
+                                            <div>
+                                                <strong>Otros Enlaces: </strong>
+                                                <a href={project.otrosEnlaces} target="_blank" rel="noopener noreferrer">
+                                                    {project.otrosEnlaces}
+                                                </a>
+                                            </div>
                                         )}
                                     </div>
                                 )}
@@ -718,5 +905,5 @@ const toggleReaction = (id, type, pubTipo) => {
         </Layout>
     );
 };
-
+Home.displayName = "home";
 export default Home;
