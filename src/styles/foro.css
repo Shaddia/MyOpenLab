@@ -1,0 +1,180 @@
+.foro-container {
+  background-color: #f9fafb;
+  padding: 32px;
+  min-height: 100vh;
+}
+
+.foro-inner {
+  max-width: 1120px; /* Aproximadamente max-w-7xl de Tailwind */
+  margin: 0 auto;
+}
+
+.foro-title {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.foro-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media screen and (min-width: 640px) {
+  .foro-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .foro-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.foro-card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.foro-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.foro-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #e9d8fd; /* Fondo suave para el ícono */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.foro-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.foro-group-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+  color: #2d3748;
+}
+
+.foro-group-desc {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 4px 0 0;
+}
+
+.foro-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.foro-tag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 9999px;
+}
+
+/* Tag por defecto */
+.tag-default {
+  background-color: #edf2f7;
+  color: #4a5568;
+}
+
+/* Colores de etiqueta */
+.tag-purple {
+  background-color: #e9d8fd;
+  color: #6b46c1;
+}
+.tag-green {
+  background-color: #c6f6d5;
+  color: #2f855a;
+}
+.tag-blue {
+  background-color: #bee3f8;
+  color: #2b6cb0;
+}
+.tag-red {
+  background-color: #feb2b2;
+  color: #c53030;
+}
+.tag-pink {
+  background-color: #fbb6ce;
+  color: #9f1239;
+}
+.tag-indigo {
+  background-color: #c3dafe;
+  color: #434190;
+}
+
+.foro-info p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.foro-members {
+  color: #4a5568;
+}
+
+.foro-topics {
+  color: #718096;
+}
+
+.foro-link {
+  margin-top: auto;
+}
+
+.foro-link a {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4299e1;
+  text-decoration: none;
+}
+
+.foro-link a:hover {
+  text-decoration: underline;
+}
+
+.foro-new-discussion {
+  margin-top: 32px;
+  text-align: right;
+}
+
+.new-discussion-btn {
+  background-color: #4c51bf; /* Morado */
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.new-discussion-btn:hover {
+  background-color: #434190;
+}

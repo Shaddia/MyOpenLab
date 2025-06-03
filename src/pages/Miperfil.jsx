@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useAuth } from '../context/useAuth';
 import { doc, getDoc, collection, getDocs, query, where, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import Layout from '../components/Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrashAlt, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrashAlt, faCamera, faAward } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import defaultAvatar from '../assets/default-avatar.png';
 import { useNavigate, Link } from 'react-router-dom';
@@ -17,6 +17,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Box } from '@mui/material';
 import { BiCodeAlt } from 'react-icons/bi';
 import { FaBriefcase, FaGraduationCap } from 'react-icons/fa';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import ReputationSystem from '../components/ReputationSystem';
+import Badges from '../components/Badges';
+import ReputationModal from '../components/ReputationModal'; // Asegúrate de crear e importar este componente
 
 // Función para formatear timestamps
 const formatTimestamp = (timestamp) => {
@@ -95,6 +100,40 @@ const MiPerfil = () => {
     techStack: portfolioData.techStack.join(', ')
   });
 
+  // Estados para Educación y Experiencia (para la vista de edición)
+  const [educationItems, setEducationItems] = useState([
+    { title: '', institution: '', start: null, end: null }
+  ]);
+  const [experienceItems, setExperienceItems] = useState([
+    { title: '', company: '', description: '', start: null, end: null }
+  ]);
+
+  // Funciones para Educación
+  const addEdu = () => {
+    setEducationItems([...educationItems, { title: '', institution: '', start: null, end: null }]);
+  };
+  const removeEdu = (index) => {
+    setEducationItems(educationItems.filter((_, idx) => idx !== index));
+  };
+  const handleEduChange = (index, field, value) => {
+    const updated = [...educationItems];
+    updated[index][field] = value;
+    setEducationItems(updated);
+  };
+
+  // Funciones para Experiencia
+  const addExp = () => {
+    setExperienceItems([...experienceItems, { title: '', company: '', description: '', start: null, end: null }]);
+  };
+  const removeExp = (index) => {
+    setExperienceItems(experienceItems.filter((_, idx) => idx !== index));
+  };
+  const handleExpChange = (index, field, value) => {
+    const updated = [...experienceItems];
+    updated[index][field] = value;
+    setExperienceItems(updated);
+  };
+
   const fetchUserData = async () => {
     if (user && user.uid) {
       const docRef = doc(db, 'users', user.uid);
@@ -109,30 +148,50 @@ const MiPerfil = () => {
 
   // Dentro del cuerpo del componente MiPerfil, antes del return:
 
-const handleSavePortfolio = async () => {
-  const updatedPortfolio = {
-    skills: portfolioText.skills.split(',').map(s => s.trim()).filter(s => s),
-    studies: portfolioText.studies.split(',').map(s => s.trim()).filter(s => s),
-    experience: portfolioText.experience.split(',').map(s => s.trim()).filter(s => s),
-    linkedin: portfolioText.linkedin.trim(),
-    techStack: portfolioText.techStack.split(',').map(s => s.trim()).filter(s => s),
-  };
+  const handleSavePortfolio = async () => {
+    const now = new Date();
+    const updatedPortfolio = {
+      skills: portfolioText.skills
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s),
+      // Transforma los items de educación en un array de objetos
+      studies: educationItems.map(item => ({
+        title: item.title,
+        institution: item.institution,
+        start: item.start ? new Date(item.start).toISOString().slice(0, 10) : '',
+        end: item.end ? (new Date(item.end) > now ? "Actualmente" : new Date(item.end).toISOString().slice(0, 10)) : ''
+      })),
+      // Transforma los items de experiencia en un array de objetos
+      experience: experienceItems.map(item => ({
+        title: item.title,
+        company: item.company,
+        description: item.description,
+        start: item.start ? new Date(item.start).toISOString().slice(0, 10) : '',
+        end: item.end ? (new Date(item.end) > now ? "Actualmente" : new Date(item.end).toISOString().slice(0, 10)) : ''
+      })),
+      linkedin: portfolioText.linkedin.trim(),
+      techStack: portfolioText.techStack
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s)
+    };
 
-  const userRef = doc(db, 'users', user.uid);
-  try {
-    await updateDoc(userRef, updatedPortfolio);
-    // Obtenemos el documento actualizado desde Firestore
-    const docSnap = await getDoc(userRef);
-    if (docSnap.exists()) {
-      setUserData(docSnap.data());
+    const userRef = doc(db, 'users', user.uid);
+    try {
+      await updateDoc(userRef, updatedPortfolio);
+      // Sincroniza la data actualizada
+      const docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        setUserData(docSnap.data());
+      }
+      setSnackbar({ open: true, severity: 'success', message: 'Portafolio actualizado correctamente' });
+      setIsEditingPortfolio(false);
+    } catch (error) {
+      console.error('Error al actualizar el portafolio:', error);
+      setSnackbar({ open: true, severity: 'error', message: 'Error al actualizar el portafolio' });
     }
-    setSnackbar({ open: true, severity: 'success', message: 'Portafolio actualizado correctamente' });
-    setIsEditingPortfolio(false);
-  } catch (error) {
-    console.error('Error al actualizar el portafolio:', error);
-    setSnackbar({ open: true, severity: 'error', message: 'Error al actualizar el portafolio' });
-  }
-};
+  };
 
   const fetchPostsAndEventos = async () => {
     if (user && user.uid) {
@@ -390,6 +449,39 @@ const handleSavePortfolio = async () => {
   });
   const lastActivity = sortedPosts.length > 0 ? sortedPosts[0].fechaCreacion : null;
 
+  const [isReputationModalOpen, setIsReputationModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("logros");
+
+  // Calcula la reputación a partir de proyectos y eventos
+  const totalReputation = useMemo(() => {
+    // Calcula puntos por likes en posts
+    const pointsFromProjects = posts.reduce((sum, post) => {
+      const likesCount = Array.isArray(post.likes)
+        ? post.likes.length
+        : (post.likes || 0);
+      return sum + likesCount;
+    }, 0) * 5;
+    
+    // Calcula puntos por likes en eventos
+    const pointsFromEvents = eventos.reduce((sum, evt) => {
+      const likesCount = Array.isArray(evt.likes)
+        ? evt.likes.length
+        : (evt.likes || 0);
+      return sum + likesCount;
+    }, 0) * 5;
+    
+    // Cada publicación (post o evento) vale 15 puntos
+    const publicationsPoints = (posts.length + eventos.length) * 15;
+    
+    console.log("posts:", posts);
+    console.log("eventos:", eventos);
+    console.log("pointsFromProjects:", pointsFromProjects);
+    console.log("pointsFromEvents:", pointsFromEvents);
+    console.log("publicationsPoints:", publicationsPoints);
+    
+    return pointsFromProjects + pointsFromEvents + publicationsPoints;
+  }, [posts, eventos]);
+
   if (loading) return <p>Cargando...</p>;
   if (!user) return <p style={{ padding: '2rem' }}>No estás autenticado.</p>;
 
@@ -459,6 +551,7 @@ const handleSavePortfolio = async () => {
           >
             <FontAwesomeIcon icon={faCamera} />
           </button>
+          
           <div
             className="profile-container"
             style={{
@@ -469,10 +562,14 @@ const handleSavePortfolio = async () => {
               maxWidth: '350px',
               width: '100%',
               textAlign: 'center',
-              color: 'white'
+              color: 'white',
+              position: 'relative'
             }}
           >
             <h3 style={{ marginBottom: '2rem', color: 'white' }}>Información del Perfil</h3>
+            
+          
+            
             <p>
               <strong>Nombre:</strong> {userData?.name || 'No especificado'}
             </p>
@@ -570,8 +667,39 @@ const handleSavePortfolio = async () => {
                 >
                   Guardar cambios
                 </button>
+                
               </div>
             )}
+            {/* Bloque nuevo de reputación integrado en el contenedor */}
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.5rem',
+                backgroundColor: '#8a2be2',
+                borderRadius: '8px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: '1rem',
+              }}
+            >
+              <span style={{ fontSize: '1rem', fontWeight: 'bold' }}>
+                Reputación: {totalReputation} pts
+              </span>
+              <button
+                onClick={() => setIsReputationModalOpen(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '24px',
+                  cursor: 'pointer'
+                }}
+                aria-label="Abrir sistema de reputación"
+              >
+                <FontAwesomeIcon icon={faAward} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1365,12 +1493,11 @@ const handleSavePortfolio = async () => {
               </Typography>
               {userData?.experience && userData.experience.length > 0 ? (
                 userData.experience.map((exp, idx) => {
-                  const fechaInicio = userData.experienceFechaInicio ? userData.experienceFechaInicio[idx] : '';
-                  const fechaFin = userData.experienceFechaFin ? userData.experienceFechaFin[idx] : '';
+                  // Se asume que cada exp es un objeto con propiedades title, company, start y end
                   const now = new Date();
-                  let displayFechaFin = fechaFin;
-                  if (fechaFin && new Date(fechaFin) > now) {
-                    displayFechaFin = "Actualmente";
+                  let displayEnd = exp.end;
+                  if (exp.end && new Date(exp.end) > now) {
+                    displayEnd = "Actualmente";
                   }
                   return (
                     <div key={idx} style={{
@@ -1385,12 +1512,17 @@ const handleSavePortfolio = async () => {
                     }}>
                       <div>
                         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                          {exp}
+                          {exp.title} {exp.company && `- ${exp.company}`}
                         </Typography>
+                        {exp.description && (
+                          <Typography variant="body2">
+                            {exp.description}
+                          </Typography>
+                        )}
                       </div>
-                      {fechaInicio && fechaFin && (
+                      {(exp.start || exp.end) && (
                         <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#a855f7' }}>
-                          {fechaInicio} - {displayFechaFin}
+                          {exp.start} - {displayEnd}
                         </Typography>
                       )}
                     </div>
@@ -1423,12 +1555,10 @@ const handleSavePortfolio = async () => {
               </Typography>
               {userData?.studies && userData.studies.length > 0 ? (
                 userData.studies.map((edu, idx) => {
-                  const fechaInicio = userData.studiesFechaInicio ? userData.studiesFechaInicio[idx] : '';
-                  const fechaFin = userData.studiesFechaFin ? userData.studiesFechaFin[idx] : '';
                   const now = new Date();
-                  let displayFechaFin = fechaFin;
-                  if (fechaFin && new Date(fechaFin) > now) {
-                    displayFechaFin = "Actualmente";
+                  let displayEnd = edu.end;
+                  if (edu.end && new Date(edu.end) > now) {
+                    displayEnd = "Actualmente";
                   }
                   return (
                     <div key={idx} style={{
@@ -1443,12 +1573,12 @@ const handleSavePortfolio = async () => {
                     }}>
                       <div>
                         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                          {edu}
+                          {edu.title} {edu.institution && `- ${edu.institution}`}
                         </Typography>
                       </div>
-                      {fechaInicio && fechaFin && (
+                      {(edu.start || edu.end) && (
                         <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#a855f7' }}>
-                          {fechaInicio} - {displayFechaFin}
+                          {edu.start} - {displayEnd}
                         </Typography>
                       )}
                     </div>
@@ -1510,17 +1640,42 @@ const handleSavePortfolio = async () => {
             {/* LINKEDIN */}
             <div style={{ marginBottom: '2rem' }}>
               <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 2 }}>
-                <LinkedInIcon style={{ marginRight: '0.5rem', color: '#0e76a8' }} /> LinkedIn
+                <LinkedInIcon style={{ marginRight: '0.5rem', color: '#0071bc' }} /> LinkedIn
               </Typography>
-              {userData?.linkedin ? (
-                <a href={userData.linkedin} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#0e76a8', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold' }}>
-                  {userData.linkedin}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <TextField
+                  value={userData?.linkedin || ''}
+                  fullWidth
+                  InputProps={{
+                    readOnly: true,
+                    style: { fontSize: '1rem' },
+                  }}
+                />
+                <a
+                  href={
+                    userData?.linkedin
+                      ? userData.linkedin.startsWith('http')
+                        ? userData.linkedin
+                        : `https://${userData.linkedin}`
+                      : '#'
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundColor: '#0077b5',
+                    color: '#fff',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '5px',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <FontAwesomeIcon icon={faGithub} style={{ marginRight: '0.5rem' }} />
+                  Visitar
                 </a>
-              ) : (
-                <Typography variant="body1" sx={{ fontFamily: 'Poppins, sans-serif' }}>
-                  No vinculado
-                </Typography>
-              )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -1535,65 +1690,170 @@ const handleSavePortfolio = async () => {
       />
 
       {/* Botón para editar portafolio si falta información */}
-      
-          <IconButton onClick={() => setIsEditingPortfolio(true)} sx={{ float: 'right' }} aria-label="Editar portafolio">
-            <EditIcon />
-          </IconButton>
-        
+
+      <IconButton onClick={() => setIsEditingPortfolio(true)} sx={{ float: 'right' }} aria-label="Editar portafolio">
+        <EditIcon />
+      </IconButton>
+
 
       {isEditingPortfolio && (
-        <div style={{
-          margin: '2rem auto',
-          maxWidth: 900,
-          padding: '2rem',
-          backgroundColor: '#fff',
-          borderRadius: '16px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-        }}>
-          <Typography variant="h5" align="center" sx={{ fontWeight: 'bold', mb: 2 }}>
-            Editar Portafolio
-          </Typography>
-          <TextField
-            label="Habilidades (separadas por coma)"
-            fullWidth
-            margin="normal"
-            value={portfolioText.skills}
-            onChange={(e) => setPortfolioText({ ...portfolioText, skills: e.target.value })}
-            inputProps={{ style: { fontSize: '1rem' } }}
-          />
-          <TextField
-            label="Estudios (separados por coma)"
-            fullWidth
-            margin="normal"
-            value={portfolioText.studies}
-            onChange={(e) => setPortfolioText({ ...portfolioText, studies: e.target.value })}
-            inputProps={{ style: { fontSize: '1rem' } }}
-          />
-          <TextField
-            label="Experiencia (separada por coma)"
-            fullWidth
-            margin="normal"
-            value={portfolioText.experience}
-            onChange={(e) => setPortfolioText({ ...portfolioText, experience: e.target.value })}
-            inputProps={{ style: { fontSize: '1rem' } }}
-          />
-          <TextField
-            label="LinkedIn"
-            fullWidth
-            margin="normal"
-            value={portfolioText.linkedin}
-            onChange={(e) => setPortfolioText({ ...portfolioText, linkedin: e.target.value })}
-            inputProps={{ style: { fontSize: '1rem' } }}
-          />
-          <TextField
-            label="Tech Stack (separadas por coma)"
-            fullWidth
-            margin="normal"
-            value={portfolioText.techStack}
-            onChange={(e) => setPortfolioText({ ...portfolioText, techStack: e.target.value })}
-            inputProps={{ style: { fontSize: '1rem' } }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
+        <div className="max-w-3xl mx-auto p-8 bg-white rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold text-center mb-6">Editar Portafolio</h2>
+
+          <div className="mb-6">
+            <TextField
+              label="Habilidades (separadas por coma)"
+              fullWidth
+              margin="normal"
+              value={portfolioText.skills}
+              onChange={(e) => setPortfolioText({ ...portfolioText, skills: e.target.value })}
+              InputProps={{ style: { fontSize: '1rem' } }}
+            />
+          </div>
+
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold mb-2 flex items-center"><FaGraduationCap className="mr-2" /> Educación</h3>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              {educationItems.map((edu, idx) => (
+                <div key={idx} className="bg-white border border-gray-300 p-4 rounded-lg mb-4 relative">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                    <TextField
+                      label="Título"
+                      fullWidth
+                      margin="normal"
+                      value={edu.title}
+                      onChange={(e) => handleEduChange(idx, 'title', e.target.value)}
+                      InputProps={{ style: { fontSize: '1rem' } }}
+                    />
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DatePicker
+                        label="Inicio"
+                        value={edu.start}
+                        onChange={(newValue) => handleEduChange(idx, 'start', newValue)}
+                        renderInput={(params) => <TextField {...params} className="sm:w-40" margin="normal" />}
+                      />
+                      <DatePicker
+                        label="Fin"
+                        value={edu.end}
+                        onChange={(newValue) => handleEduChange(idx, 'end', newValue)}
+                        renderInput={(params) => <TextField {...params} className="sm:w-40" margin="normal" />}
+                      />
+                    </LocalizationProvider>
+                  </div>
+                  <TextField
+                    label="Institución"
+                    fullWidth
+                    margin="normal"
+                    value={edu.institution}
+                    onChange={(e) => handleEduChange(idx, 'institution', e.target.value)}
+                    InputProps={{ style: { fontSize: '1rem' } }}
+                  />
+                  <button
+                    onClick={() => removeEdu(idx)}
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-600"
+                    title="Eliminar educación"
+                  >
+                    <FontAwesomeIcon icon={faTrashAlt} />
+                  </button>
+                </div>
+              ))}
+            </LocalizationProvider>
+            <button
+              onClick={addEdu}
+              className="mx-auto block text-[#a855f7] border border-dashed border-[#a855f7] bg-[#faf5ff] py-2 px-4 rounded"
+            >
+              + Añadir educación
+            </button>
+          </div>
+
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold mb-2 flex items-center"><FaBriefcase className="mr-2" /> Experiencia Profesional</h3>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              {experienceItems.map((exp, idx) => (
+                <div key={idx} className="bg-white border border-gray-300 p-4 rounded-lg mb-4 relative">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                    <TextField
+                      label="Cargo"
+                      fullWidth
+                      margin="normal"
+                      value={exp.title}
+                      onChange={(e) => handleExpChange(idx, 'title', e.target.value)}
+                      InputProps={{ style: { fontSize: '1rem' } }}
+                    />
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DatePicker
+                        label="Inicio"
+                        value={exp.start}
+                        onChange={(newValue) => handleExpChange(idx, 'start', newValue)}
+                        renderInput={(params) => <TextField {...params} className="sm:w-40" margin="normal" />}
+                      />
+                      <DatePicker
+                        label="Fin"
+                        value={exp.end}
+                        onChange={(newValue) => handleExpChange(idx, 'end', newValue)}
+                        renderInput={(params) => <TextField {...params} className="sm:w-40" margin="normal" />}
+                      />
+                    </LocalizationProvider>
+                  </div>
+                  <TextField
+                    label="Empresa"
+                    fullWidth
+                    margin="normal"
+                    value={exp.company}
+                    onChange={(e) => handleExpChange(idx, 'company', e.target.value)}
+                    InputProps={{ style: { fontSize: '1rem' } }}
+                  />
+                  <TextField
+                    label="Descripción"
+                    fullWidth
+                    margin="normal"
+                    multiline
+                    rows={3}
+                    value={exp.description}
+                    onChange={(e) => handleExpChange(idx, 'description', e.target.value)}
+                    InputProps={{ style: { fontSize: '1rem' } }}
+                  />
+                  <button
+                    onClick={() => removeExp(idx)}
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-600"
+                    title="Eliminar experiencia"
+                  >
+                    <FontAwesomeIcon icon={faTrashAlt} />
+                  </button>
+                </div>
+              ))}
+            </LocalizationProvider>
+            <button
+              onClick={addExp}
+              className="mx-auto block text-[#a855f7] border border-dashed border-[#a855f7] bg-[#faf5ff] py-2 px-4 rounded"
+            >
+              + Añadir experiencia
+            </button>
+          </div>
+
+          <div className="mb-6">
+            <TextField
+              label="LinkedIn"
+              fullWidth
+              margin="normal"
+              value={portfolioText.linkedin}
+              onChange={(e) => setPortfolioText({ ...portfolioText, linkedin: e.target.value })}
+              InputProps={{ style: { fontSize: '1rem' } }}
+            />
+          </div>
+
+          <div className="mb-6">
+            <TextField
+              label="Tech Stack (separadas por coma)"
+              fullWidth
+              margin="normal"
+              value={portfolioText.techStack}
+              onChange={(e) => setPortfolioText({ ...portfolioText, techStack: e.target.value })}
+              InputProps={{ style: { fontSize: '1rem' } }}
+            />
+          </div>
+
+          <div className="flex justify-center gap-4 mt-6">
             <Button variant="contained" color="primary" onClick={handleSavePortfolio}>
               Guardar Cambios
             </Button>
@@ -1604,6 +1864,18 @@ const handleSavePortfolio = async () => {
         </div>
       )}
 
+      <ReputationSystem posts={posts} userData={userData} />
+      <Badges userData={userData} posts={posts} />
+
+      
+
+      {/* Modal de reputación */}
+      {isReputationModalOpen && (
+        <ReputationModal
+          isOpen={isReputationModalOpen}
+          onClose={() => setIsReputationModalOpen(false)}
+        />
+      )}
     </Layout>
   );
 };

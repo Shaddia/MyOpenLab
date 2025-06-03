@@ -111,7 +111,7 @@ const PortfolioEditor = ({ open, handleClose, portfolio, setPortfolio }) => {
       </Snackbar>
       */}
       {/* Mensaje indicando que la edición del portafolio está deshabilitada */}
-      <div>El editor del portafolio está deshabilitado.</div>
+      
     </>
   );
 };

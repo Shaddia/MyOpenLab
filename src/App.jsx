@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import MiPerfil from './pages/Miperfil';
 import Home from './pages/Home';
 import Favoritos from './pages/Favoritos';
+import Foro from './pages/Foro';
 import MeGusta from './pages/MeGusta';
 import PrivateRoute from './components/PrivateRoute';
 import './styles/dark-mode.css';
@@ -41,6 +42,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <MeGusta />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/foro"
+              element={
+                <PrivateRoute>
+                  <Foro />
                 </PrivateRoute>
               }
             />

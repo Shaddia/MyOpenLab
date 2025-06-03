@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import '../styles/home.css';
 import '../styles/dark-mode.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faComments } from '@fortawesome/free-solid-svg-icons';
 import {
   faHouse,
   faCompass,
@@ -31,6 +32,7 @@ const layoutTranslations = {
     configuracion: "Configuración",
     meGusta: "Me gusta",
     favoritos: "Favoritos",
+    foro: "Foro",
     cerrarSesion: "Cerrar sesión",
     darkModeOn: "Modo Oscuro",
     darkModeOff: "Modo Claro"
@@ -43,6 +45,7 @@ const layoutTranslations = {
     configuracion: "Settings",
     meGusta: "Likes",
     favoritos: "Favorites",
+    foro: "Forum",
     cerrarSesion: "Logout",
     darkModeOn: "Dark Mode",
     darkModeOff: "Light Mode"
@@ -108,6 +111,9 @@ const Layout = ({ children, pageTitle }) => {
           <Link to="/eventos"><FontAwesomeIcon icon={faCalendarTimes} /> {texts.eventos}</Link>
           <Link to="/perfil"><FontAwesomeIcon icon={faUser} /> {texts.miPerfil}</Link>
           <Link to="/amigos"> <FontAwesomeIcon icon={faUserFriends} /> Amigos</Link>
+          <Link to="/foro">
+            <FontAwesomeIcon icon={faComments} /> {texts.foro}
+          </Link>
           <Link to="/configuracion"><FontAwesomeIcon icon={faGear} /> {texts.configuracion}</Link>
           <hr className="divider" />
           <div className="account-section">
@@ -177,8 +183,8 @@ const Layout = ({ children, pageTitle }) => {
                 )}
               </Link>
             )}
-            <button 
-              onClick={toggleDarkMode} 
+            <button
+              onClick={toggleDarkMode}
               style={{ marginRight: '1rem', padding: '0.4rem 0.8rem', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
             >
               {darkMode ? '🌕' : '🌛'}
@@ -188,19 +194,19 @@ const Layout = ({ children, pageTitle }) => {
         {pageTitle === "Notificaciones" && (
           <div style={{ backgroundColor: '#7e22ce', height: '1px', width: '100vw' }}></div>
         )}
-        
+
         {
-  React.Children.map(children, child => {
-    if (
-      React.isValidElement(child) &&
-      // Verifica tanto displayName como name por si acaso
-      (child.type.displayName === "home" || child.type.name === "home")
-    ) {
-      return React.cloneElement(child, { searchQuery: searchQuery || "" });
-    }
-    return child;
-  })
-}
+          React.Children.map(children, child => {
+            if (
+              React.isValidElement(child) &&
+              // Verifica tanto displayName como name por si acaso
+              (child.type.displayName === "home" || child.type.name === "home")
+            ) {
+              return React.cloneElement(child, { searchQuery: searchQuery || "" });
+            }
+            return child;
+          })
+        }
       </main>
     </div>
   );
