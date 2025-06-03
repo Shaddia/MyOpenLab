@@ -8,6 +8,15 @@ import { faEdit, faTrashAlt, faCamera } from '@fortawesome/free-solid-svg-icons'
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import defaultAvatar from '../assets/default-avatar.png';
 import { useNavigate, Link } from 'react-router-dom';
+import { Grid, Card, CardContent, Typography, Chip, IconButton, Accordion, AccordionSummary, AccordionDetails, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete, Snackbar, Alert } from '@mui/material';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { motion } from 'framer-motion';
+import PortfolioEditor from '../components/PortafolioEditor';
+import EditIcon from '@mui/icons-material/Edit';
+import { Box } from '@mui/material';
+import { BiCodeAlt } from 'react-icons/bi';
+import { FaBriefcase, FaGraduationCap } from 'react-icons/fa';
 
 // Función para formatear timestamps
 const formatTimestamp = (timestamp) => {
@@ -18,6 +27,10 @@ const formatTimestamp = (timestamp) => {
   }
   return 'Sin fecha';
 };
+
+// Opciones predefinidas para habilidades y stack - EXPORTADAS CORRECTAMENTE
+export const predefinedSkills = ["React", "Angular", "SQL", "Node.js", "Python", "Docker", "AWS", "Firebase", "Java", "C++"];
+export const predefinedTechStack = ["React", "Node.js", "Firebase", "Docker", "AWS", "Python", "Java", "Angular"];
 
 const MiPerfil = () => {
   const { user } = useAuth();
@@ -51,6 +64,37 @@ const MiPerfil = () => {
   const [followersData, setFollowersData] = useState([]);
   const [followingData, setFollowingData] = useState([]);
 
+  const [portfolio, setPortfolio] = useState({
+    skills: [],
+    studies: [],
+    experience: [],
+    linkedin: '',
+    techStack: []
+  });
+
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Estado para edición del portafolio
+  const [isEditingPortfolio, setIsEditingPortfolio] = useState(false);
+  // Usamos portfolioData para agrupar los campos del portafolio de userData
+  const [portfolioData, setPortfolioData] = useState({
+    skills: userData?.skills || [],
+    studies: userData?.studies || [],
+    experience: userData?.experience || [],
+    linkedin: userData?.linkedin || '',
+    techStack: userData?.techStack || []
+  });
+
+  // Agrega este nuevo estado, justo después de definir portfolioData:
+  const [portfolioText, setPortfolioText] = useState({
+    skills: portfolioData.skills.join(', '),
+    studies: portfolioData.studies.join(', '),
+    experience: portfolioData.experience.join(', '),
+    linkedin: portfolioData.linkedin,
+    techStack: portfolioData.techStack.join(', ')
+  });
+
   const fetchUserData = async () => {
     if (user && user.uid) {
       const docRef = doc(db, 'users', user.uid);
@@ -62,6 +106,33 @@ const MiPerfil = () => {
       }
     }
   };
+
+  // Dentro del cuerpo del componente MiPerfil, antes del return:
+
+const handleSavePortfolio = async () => {
+  const updatedPortfolio = {
+    skills: portfolioText.skills.split(',').map(s => s.trim()).filter(s => s),
+    studies: portfolioText.studies.split(',').map(s => s.trim()).filter(s => s),
+    experience: portfolioText.experience.split(',').map(s => s.trim()).filter(s => s),
+    linkedin: portfolioText.linkedin.trim(),
+    techStack: portfolioText.techStack.split(',').map(s => s.trim()).filter(s => s),
+  };
+
+  const userRef = doc(db, 'users', user.uid);
+  try {
+    await updateDoc(userRef, updatedPortfolio);
+    // Obtenemos el documento actualizado desde Firestore
+    const docSnap = await getDoc(userRef);
+    if (docSnap.exists()) {
+      setUserData(docSnap.data());
+    }
+    setSnackbar({ open: true, severity: 'success', message: 'Portafolio actualizado correctamente' });
+    setIsEditingPortfolio(false);
+  } catch (error) {
+    console.error('Error al actualizar el portafolio:', error);
+    setSnackbar({ open: true, severity: 'error', message: 'Error al actualizar el portafolio' });
+  }
+};
 
   const fetchPostsAndEventos = async () => {
     if (user && user.uid) {
@@ -134,6 +205,28 @@ const MiPerfil = () => {
       fetchFollowingInfo(userData.following);
     }
   }, [userData?.followers, userData?.following]);
+
+  // En un useEffect actualiza portfolioData cuando userData cambie (opcional)
+  useEffect(() => {
+    setPortfolioData({
+      skills: userData?.skills || [],
+      studies: userData?.studies || [],
+      experience: userData?.experience || [],
+      linkedin: userData?.linkedin || '',
+      techStack: userData?.techStack || []
+    });
+  }, [userData]);
+
+  // Sincroniza portfolioText cuando portfolioData cambie
+  useEffect(() => {
+    setPortfolioText({
+      skills: portfolioData.skills.join(', '),
+      studies: portfolioData.studies.join(', '),
+      experience: portfolioData.experience.join(', '),
+      linkedin: portfolioData.linkedin,
+      techStack: portfolioData.techStack.join(', ')
+    });
+  }, [portfolioData]);
 
   const handleDeletePost = async (postUniqueId) => {
     try {
@@ -546,7 +639,7 @@ const MiPerfil = () => {
                             nombre: post.nombre,
                             descripcion: post.descripcion,
                             herramientas: post.herramientas,
-                            fechaFin: post.fechaFin
+                            fechaFin: post.fechaFin,
                           });
                         }}
                         style={{
@@ -780,13 +873,13 @@ const MiPerfil = () => {
         </div>
         <div>
           <h4>
-            {lastActivity 
-                ? new Date(lastActivity.seconds * 1000).toLocaleDateString('es-ES', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                  }) 
-                : 'N/A'}
+            {lastActivity
+              ? new Date(lastActivity.seconds * 1000).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+              : 'N/A'}
           </h4>
           <p>Última actividad</p>
         </div>
@@ -1019,22 +1112,22 @@ const MiPerfil = () => {
       )}
 
       <div className="timeline-container" style={{
-          backgroundColor: '#1c2833',
-          color: '#fff',
-          padding: '1rem',
-          borderRadius: '8px',
-          margin: '1rem 2rem'
+        backgroundColor: '#1c2833',
+        color: '#fff',
+        padding: '1rem',
+        borderRadius: '8px',
+        margin: '1rem 2rem'
       }}>
         <h4 style={{ textAlign: 'center', marginBottom: '1rem' }}>Historial de Actividad</h4>
         <div className="timeline" style={{
-            position: 'relative',
-            marginLeft: '20px'
+          position: 'relative',
+          marginLeft: '20px'
         }}>
           {activities.length > 0 ? activities.map(activity => (
             <div key={activity.id} className="timeline-item" style={{
-                position: 'relative',
-                paddingLeft: '20px',
-                marginBottom: '1rem'
+              position: 'relative',
+              paddingLeft: '20px',
+              marginBottom: '1rem'
             }}>
               {/* Línea de la timeline */}
               <div style={{
@@ -1053,12 +1146,12 @@ const MiPerfil = () => {
               <div style={{ fontSize: '0.8rem', color: '#ccc' }}>
                 {activity.date
                   ? new Date(activity.date.seconds * 1000).toLocaleString('es-ES', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })
                   : 'Sin fecha'}
               </div>
             </div>
@@ -1071,30 +1164,30 @@ const MiPerfil = () => {
       {/* Modal de Seguidores */}
       {showFollowersModal && (
         <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
         }}>
           <div style={{
-              backgroundColor: '#f5f5f5',
-              padding: '2rem',
-              borderRadius: '10px',
-              width: '90%',
-              maxWidth: '500px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            backgroundColor: '#f5f5f5',
+            padding: '2rem',
+            borderRadius: '10px',
+            width: '90%',
+            maxWidth: '500px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
           }}>
             <h3 style={{ textAlign: 'center', marginBottom: '1rem' }}>Seguidores</h3>
             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {followersData.length > 0 ? (
                 followersData.map(follower => (
-                  <div key={follower.uid} 
+                  <div key={follower.uid}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1106,8 +1199,8 @@ const MiPerfil = () => {
                       setShowFollowersModal(false);
                       navigate(`/perfil/${follower.uid}`);
                     }}>
-                    <img 
-                      src={follower.photoURL || defaultAvatar} 
+                    <img
+                      src={follower.photoURL || defaultAvatar}
                       alt={follower.name}
                       style={{
                         width: '40px',
@@ -1148,30 +1241,30 @@ const MiPerfil = () => {
       {/* Modal de Siguiendo */}
       {showFollowingModal && (
         <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
         }}>
           <div style={{
-              backgroundColor: '#f5f5f5',
-              padding: '2rem',
-              borderRadius: '10px',
-              width: '90%',
-              maxWidth: '500px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            backgroundColor: '#f5f5f5',
+            padding: '2rem',
+            borderRadius: '10px',
+            width: '90%',
+            maxWidth: '500px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
           }}>
             <h3 style={{ textAlign: 'center', marginBottom: '1rem' }}>Siguiendo</h3>
             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {followingData.length > 0 ? (
                 followingData.map(person => (
-                  <div key={person.uid} 
+                  <div key={person.uid}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1183,8 +1276,8 @@ const MiPerfil = () => {
                       setShowFollowingModal(false);
                       navigate(`/perfil/${person.uid}`);
                     }}>
-                    <img 
-                      src={person.photoURL || defaultAvatar} 
+                    <img
+                      src={person.photoURL || defaultAvatar}
                       alt={person.name}
                       style={{
                         width: '40px',
@@ -1221,6 +1314,296 @@ const MiPerfil = () => {
           </div>
         </div>
       )}
+
+      {/* ===================================== */}
+      {/* Nueva sección de Portafolio Profesional (estilo CV) */}
+      {/* ===================================== */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card sx={{ margin: '2rem auto', maxWidth: 900, p: 4, borderRadius: '16px', boxShadow: 3, backgroundColor: '#ffffff' }}>
+          <CardContent>
+            <Typography variant="h4" align="center" sx={{ fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 4 }}>
+              Portafolio Profesional
+            </Typography>
+
+            {/* STACK TECNOLÓGICO */}
+            <div style={{ marginBottom: '2rem' }}>
+              <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 2 }}>
+                <BiCodeAlt style={{ marginRight: '0.5rem', color: '#1e88e5' }} /> Stack Tecnológico
+              </Typography>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                {userData?.techStack && userData.techStack.length > 0 ? (
+                  userData.techStack.map((tech, idx) => (
+                    <span key={idx}
+                      style={{
+                        backgroundColor: '#e0f2fe',
+                        color: '#0369a1',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        fontFamily: 'Poppins, sans-serif'
+                      }}>
+                      {tech}
+                    </span>
+                  ))
+                ) : (
+                  <span style={{
+                    backgroundColor: '#e0f2fe',
+                    color: '#0369a1',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '20px',
+                    fontFamily: 'Poppins, sans-serif'
+                  }}>
+                    JavaScript
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* EXPERIENCIA PROFESIONAL */}
+            <div style={{ marginBottom: '2rem' }}>
+              <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 2 }}>
+                <FaBriefcase style={{ marginRight: '0.5rem', color: '#a855f7' }} /> Experiencia Profesional
+              </Typography>
+              {userData?.experience && userData.experience.length > 0 ? (
+                userData.experience.map((exp, idx) => {
+                  const fechaInicio = userData.experienceFechaInicio ? userData.experienceFechaInicio[idx] : '';
+                  const fechaFin = userData.experienceFechaFin ? userData.experienceFechaFin[idx] : '';
+                  const now = new Date();
+                  let displayFechaFin = fechaFin;
+                  if (fechaFin && new Date(fechaFin) > now) {
+                    displayFechaFin = "Actualmente";
+                  }
+                  return (
+                    <div key={idx} style={{
+                      backgroundColor: '#f9fafb',
+                      borderRadius: '8px',
+                      padding: '1rem',
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, sans-serif',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <div>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          {exp}
+                        </Typography>
+                      </div>
+                      {fechaInicio && fechaFin && (
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#a855f7' }}>
+                          {fechaInicio} - {displayFechaFin}
+                        </Typography>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  fontFamily: 'Poppins, sans-serif'
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Desarrollador Senior
+                  </Typography>
+                  <Typography variant="body1">
+                    Google
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#a855f7', textAlign: 'right' }}>
+                    Febrero 2022 - Presente
+                  </Typography>
+                </div>
+              )}
+            </div>
+
+            {/* EDUCACIÓN */}
+            <div style={{ marginBottom: '2rem' }}>
+              <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 2 }}>
+                <FaGraduationCap style={{ marginRight: '0.5rem', color: '#10b981' }} /> Educación
+              </Typography>
+              {userData?.studies && userData.studies.length > 0 ? (
+                userData.studies.map((edu, idx) => {
+                  const fechaInicio = userData.studiesFechaInicio ? userData.studiesFechaInicio[idx] : '';
+                  const fechaFin = userData.studiesFechaFin ? userData.studiesFechaFin[idx] : '';
+                  const now = new Date();
+                  let displayFechaFin = fechaFin;
+                  if (fechaFin && new Date(fechaFin) > now) {
+                    displayFechaFin = "Actualmente";
+                  }
+                  return (
+                    <div key={idx} style={{
+                      backgroundColor: '#f9fafb',
+                      borderRadius: '8px',
+                      padding: '1rem',
+                      marginBottom: '1rem',
+                      fontFamily: 'Poppins, sans-serif',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <div>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          {edu}
+                        </Typography>
+                      </div>
+                      {fechaInicio && fechaFin && (
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#a855f7' }}>
+                          {fechaInicio} - {displayFechaFin}
+                        </Typography>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  fontFamily: 'Poppins, sans-serif'
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Licenciatura en Informática
+                  </Typography>
+                  <Typography variant="body1">
+                    Universidad de Buenos Aires
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#a855f7', textAlign: 'right' }}>
+                    2018 - 2022
+                  </Typography>
+                </div>
+              )}
+            </div>
+
+            {/* HABILIDADES */}
+            <div style={{ marginBottom: '2rem' }}>
+              <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 2 }}>
+                <EditIcon style={{ marginRight: '0.5rem', color: '#1e88e5' }} /> Habilidades
+              </Typography>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                {userData?.skills && userData.skills.length > 0 ? (
+                  userData.skills.map((skill, idx) => (
+                    <span key={idx}
+                      style={{
+                        backgroundColor: '#e0f2fe',
+                        color: '#0369a1',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        fontFamily: 'Poppins, sans-serif'
+                      }}>
+                      {skill}
+                    </span>
+                  ))
+                ) : (
+                  <span style={{
+                    backgroundColor: '#e0f2fe',
+                    color: '#0369a1',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '20px',
+                    fontFamily: 'Poppins, sans-serif'
+                  }}>
+                    React
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* LINKEDIN */}
+            <div style={{ marginBottom: '2rem' }}>
+              <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 2 }}>
+                <LinkedInIcon style={{ marginRight: '0.5rem', color: '#0e76a8' }} /> LinkedIn
+              </Typography>
+              {userData?.linkedin ? (
+                <a href={userData.linkedin} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#0e76a8', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold' }}>
+                  {userData.linkedin}
+                </a>
+              ) : (
+                <Typography variant="body1" sx={{ fontFamily: 'Poppins, sans-serif' }}>
+                  No vinculado
+                </Typography>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Editor de Portafolio */}
+      <PortfolioEditor
+        open={isEditingPortfolio}
+        handleClose={() => setIsEditingPortfolio(false)}
+        portfolio={portfolioData}
+        setPortfolio={setPortfolioData}
+      />
+
+      {/* Botón para editar portafolio si falta información */}
+      
+          <IconButton onClick={() => setIsEditingPortfolio(true)} sx={{ float: 'right' }} aria-label="Editar portafolio">
+            <EditIcon />
+          </IconButton>
+        
+
+      {isEditingPortfolio && (
+        <div style={{
+          margin: '2rem auto',
+          maxWidth: 900,
+          padding: '2rem',
+          backgroundColor: '#fff',
+          borderRadius: '16px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+        }}>
+          <Typography variant="h5" align="center" sx={{ fontWeight: 'bold', mb: 2 }}>
+            Editar Portafolio
+          </Typography>
+          <TextField
+            label="Habilidades (separadas por coma)"
+            fullWidth
+            margin="normal"
+            value={portfolioText.skills}
+            onChange={(e) => setPortfolioText({ ...portfolioText, skills: e.target.value })}
+            inputProps={{ style: { fontSize: '1rem' } }}
+          />
+          <TextField
+            label="Estudios (separados por coma)"
+            fullWidth
+            margin="normal"
+            value={portfolioText.studies}
+            onChange={(e) => setPortfolioText({ ...portfolioText, studies: e.target.value })}
+            inputProps={{ style: { fontSize: '1rem' } }}
+          />
+          <TextField
+            label="Experiencia (separada por coma)"
+            fullWidth
+            margin="normal"
+            value={portfolioText.experience}
+            onChange={(e) => setPortfolioText({ ...portfolioText, experience: e.target.value })}
+            inputProps={{ style: { fontSize: '1rem' } }}
+          />
+          <TextField
+            label="LinkedIn"
+            fullWidth
+            margin="normal"
+            value={portfolioText.linkedin}
+            onChange={(e) => setPortfolioText({ ...portfolioText, linkedin: e.target.value })}
+            inputProps={{ style: { fontSize: '1rem' } }}
+          />
+          <TextField
+            label="Tech Stack (separadas por coma)"
+            fullWidth
+            margin="normal"
+            value={portfolioText.techStack}
+            onChange={(e) => setPortfolioText({ ...portfolioText, techStack: e.target.value })}
+            inputProps={{ style: { fontSize: '1rem' } }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
+            <Button variant="contained" color="primary" onClick={handleSavePortfolio}>
+              Guardar Cambios
+            </Button>
+            <Button variant="outlined" onClick={() => setIsEditingPortfolio(false)}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      )}
+
     </Layout>
   );
 };
